@@ -7,6 +7,7 @@ Created on Tue Sep  8 13:06:45 2020
 
 #TODO make main window-analysis window, add option to go to new window as a menu bar or button
 #TODO edit code so that the user can select by tournament then select by game
+#TODO create 3 save files one for players one for teams one for tournament
 #TODO add time of bludger control
 import tkinter as tk
 import pandas as pd
@@ -31,18 +32,18 @@ if os.path.exists('.\\games\\')==False:
 if os.path.exists('.\\games\\game_def\\')==False:
     #if there is no folder called games to store it, make one
     os.mkdir('.\\games\\game_def\\') #creates folder
+'''
 if os.path.exists('.\\games\\player\\')==False:
     os.mkdir('.\\games\\player\\')
 if os.path.exists('.\\games\\team\\')==False:
     os.mkdir('.\\games\team\\')
 if os.path.exists('.\\games\\tournament\\')==False:
     os.mkdir('.\\games\\tournament\\')
-
+'''
 
 
 
 #TODO add new window to view stats
-df_match=pd.DataFrame()
 
 
 
