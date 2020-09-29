@@ -13,10 +13,10 @@ def install(package):
     subprocess.check_call([sys.executable, "-m", "pip", "install", package])
     
     
-modules=['pandas','numpy','tkinter','scipy','matplotlib','os','time','jinja2']
+modules=['pandas','numpy','tkinter','scipy','matplotlib','os','time','jinja2','openpyxl']
 for module in modules:
     try:
         install(module)
     except:
         print(f'Can\'t install {module}')
-    time.sleep(5)
+    time.sleep(1)
