@@ -5,6 +5,8 @@ This will eventually be made into an exe but currently this is not working corre
 - upload to a central google sheet
 - add total stats per year that autoupdates
 - separate tabs for each position
+- add totals for each tournament and each season
+- add way to sync files when a new file is added
 ### The main file is QuidAnalysisMain
 ## Running the script
 To run this download the files to a new folder and then **run the script QuidAnalysisMain**
