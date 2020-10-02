@@ -685,11 +685,11 @@ def create_summary(directory,group_cols):
     matchlist=list(list_files1(directory, '.xlsx'))
     #basically so the totals doesn't keep getting added each time
     df_match=pd.DataFrame()
-    if 'Total.xlsx' in matchlist: 
-        matchlist.remove('Total.xlsx')
+    if 'Totals.xlsx' in matchlist: 
+        matchlist.remove('Totals.xlsx')
     for match in matchlist:
         #append all the data from each match to a dataframe
-        df_match=df_match.append(pd.read_excel(directory+match,index=False).to_dict('records'))
+        df_match=df_match.append(pd.read_excel(directory+match).to_dict('records'))
     df_all=pd.DataFrame(df_match)
     #groups the dataframes from
     df_summary=df_all.groupby(group_cols).sum()
@@ -817,7 +817,7 @@ def save():
         season_stats=pd.DataFrame()
         for tournament in tournament_list: 
             if tournament.split('-',1)[1]==season:
-                season_stats=season_stats.append(pd.read_excel('./games/tournament/'+tournament+'/'+'Totals.xlsx',index=True).to_dict('records'))
+                season_stats=season_stats.append(pd.read_excel('./games/tournament/'+tournament+'/'+'Totals.xlsx').to_dict('records'))
                 season_stats=season_stats.fillna(method='ffill')
         #group whole season stats by player and position
         season_stats=season_stats.groupby(['Name','Position']).sum()
@@ -1055,17 +1055,6 @@ def window_add_match():
     btn_add_match=tk.Button(wd_add_match,text='add new match',command=add_match,width=20,height=1)
     btn_add_match.grid(row=100,column=1)
 
-def mergefolders(root_src_dir, root_dst_dir):
-    for src_dir, dirs, files in os.walk(root_src_dir):
-        dst_dir = src_dir.replace(root_src_dir, root_dst_dir, 1)
-        if not os.path.exists(dst_dir):
-            os.makedirs(dst_dir)
-        for file_ in files:
-            src_file = os.path.join(src_dir, file_)
-            dst_file = os.path.join(dst_dir, file_)
-            if os.path.exists(dst_file):
-                os.remove(dst_file)
-            shutil.copy(src_file, dst_dir)
             
 def import_match():
     #function to add a match and sync its contents with the rest of the data
@@ -1090,7 +1079,7 @@ def import_match():
         teams.remove('vs')
         teams.remove('.xlsx')
         
-        df=pd.read_excel(tournament_loc+'/'+match,index=False)
+        df=pd.read_excel(tournament_loc+'/'+match)
         #print(df)
         
         team1_players=[]
@@ -1129,7 +1118,12 @@ def import_match():
         for team in range(len(df_team)):
             #print('team_row')
             #print(df_team[team].iloc[0]['Team'])
-            team_dir='./games/team/'+df_team[team].iloc[0]['Team']+'/'
+            try:
+                team_dir='./games/team/'+df_team[team].iloc[0]['Team']+'/'
+            except IndexError as error:
+                messagebox.showerror('Error','Error: Team not found \n',
+                                     error)
+                continue
             #print('team dir- ',team_dir)
             #print(df_team[team])
             df_team[team].drop(['Team'],axis=1)
@@ -1172,7 +1166,7 @@ def import_match():
         season_stats=pd.DataFrame()
         for tournament in tournament_list: 
             if tournament.split('-',1)[1]==season:
-                season_stats=season_stats.append(pd.read_excel('./games/tournament/'+tournament+'/'+'Totals.xlsx',index=True).to_dict('records'))
+                season_stats=season_stats.append(pd.read_excel('./games/tournament/'+tournament+'/'+'Totals.xlsx').to_dict('records'))
                 season_stats=season_stats.fillna(method='ffill')
         #group whole season stats by player and position
         season_stats=season_stats.groupby(['Name','Position']).sum()
