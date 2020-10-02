@@ -722,12 +722,14 @@ def save():
         data['control percent']=round(((data['control time']*gamespeed.get())/data['Pitch Time'])*100,2)
         if data['control percent']>100: #just incase this happens ensures 100% is the max value
             data['control percent']=100
-        if snitch_time.get()>0:
+        if snitch_time.get()>0: #if they were on pitch during snitch on pitch
             data['bubble percent']=round(((data['bubble duration']*gamespeed.get())/(snitch_time.get()*gamespeed.get()))*100,2)
             if data['bubble percent']>100:
                 data['bubble percent']=100
+        #we dont need these now so delete them        
         del data['control time']
         del data['bubble duration']
+        
     elif selected_pos.get()=='Seeker':
         seeker_data['time attacking']=seeker_data['time attacking']*gamespeed.get()
         seeker_data['time defending']=seeker_data['time defending']*gamespeed.get()
@@ -812,15 +814,33 @@ def save():
     tournament_list= [f.name for f in os.scandir('./games/tournament/') if f.is_dir()] #gets list of tournaments
     years=[item.split('-', 1)[1] for item in tournament_list] #gets the year of each tournament
     years=list(set(years)) #removes duplicate years
+    
     for season in years:
         #for each season get all of the totals from the tournaments in that year
         season_stats=pd.DataFrame()
         for tournament in tournament_list: 
+            #print('tournament- ',tournament)
+            #print('filepath- ','./games/tournament/'+tournament+'/'+'Totals.xlsx')
+            #print('tournament year-',tournament.split('-',1)[1])
+            #print('season-         ',season)
             if tournament.split('-',1)[1]==season:
-                season_stats=season_stats.append(pd.read_excel('./games/tournament/'+tournament+'/'+'Totals.xlsx').to_dict('records'))
-                season_stats=season_stats.fillna(method='ffill')
+                #print('tournament matches year')
+                try:
+                    season_stats=season_stats.append(pd.read_excel('./games/tournament/'+tournament+'/'+'Totals.xlsx').to_dict('records'))
+                    season_stats=season_stats.fillna(method='ffill')
+                except Exception as exception:
+                    messagebox.showerror('Error saving season stats',
+                                         'There has been an error reading the season statistics \n'+
+                                         exception)
+        #print(season)
+        #print('season_stats-')
+        #print(season_stats)
         #group whole season stats by player and position
-        season_stats=season_stats.groupby(['Name','Position']).sum()
+        try:            
+            season_stats=season_stats.groupby(['Name','Position']).sum()
+        except Exception as exception:
+            messagebox.showerror('Error Grouping Stats','There has been an error grouping the season statistics \n'+
+                                 exception)
         season_stats.to_excel('./games/season_results/'+season+'.xlsx',index=True)
 
     #reset values
