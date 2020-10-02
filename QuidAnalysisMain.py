@@ -37,10 +37,11 @@ Program for recording quidditch stats using tkinter and pandas
 import tkinter as tk
 import pandas as pd
 import os 
-import time      
+import time   
+import shutil   
 from tkinter import messagebox 
 from tkinter import ttk
-
+from tkinter import filedialog
 
 root=tk.Tk()
 #sets root window basic info
@@ -64,6 +65,8 @@ if os.path.exists('./games/team/')==False:
     os.mkdir('./games/team/')
 if os.path.exists('./games/tournament/')==False:
     os.mkdir('./games/tournament/')
+if os.path.exists('./games/season_results')==False:
+    os.mkdir('./games/season_results') #creates folder
 
 
     
@@ -184,7 +187,12 @@ def player_team(event):
         p_team_index=playerlist.index(cb_player.get())
         team.set(p_team[p_team_index])
         #enables the buttons 
-        lbl_team.configure(text=team.get())
+        if len(team.get())>14: #if team name is too long use the last word in their name
+            team_l=team.get().split(' ')
+            lbl_team.configure(text=team_l[-1])
+        else:
+            team_l=team.get()
+            lbl_team.configure(text=team_l)
         opt_position['state']='normal'
         opt_position.config(bg='white')
 
@@ -649,6 +657,7 @@ def score(data,position):
                +1*data['forced pass']+2*data['forced turnover']
                +0.8*data['team goal']+0.25*data['shot block']+1.3*data['catch']
                +5*data['snitch catch']+2*data['bubble broken'])
+        #adds a different score per 10 percent interval of control
         if data['control percent']>0.6:
             #each digit corresponds to a score if the thing in the max equals an interval of 10%
             score += int('0467899'[max(int(data['control percent'])//10-5,0)])
@@ -671,6 +680,22 @@ def score(data,position):
          score+=-3*data['yellow']-5*data['red']
     return(score)
 
+def create_summary(directory,group_cols):
+    #creates a summarised total
+    matchlist=list(list_files1(directory, '.xlsx'))
+    #basically so the totals doesn't keep getting added each time
+    df_match=pd.DataFrame()
+    if 'Total.xlsx' in matchlist: 
+        matchlist.remove('Total.xlsx')
+    for match in matchlist:
+        #append all the data from each match to a dataframe
+        df_match=df_match.append(pd.read_excel(directory+match,index=False).to_dict('records'))
+    df_all=pd.DataFrame(df_match)
+    #groups the dataframes from
+    df_summary=df_all.groupby(group_cols).sum()
+    df_summary.to_excel(directory+'Totals.xlsx',index=True)
+    
+    
 def save():
     #adds the data to the dataframe and resets variables
     #add try statement to save
@@ -732,19 +757,16 @@ def save():
         main_data.append(data)
     match_df=pd.DataFrame(main_data)
     match_df.to_excel('./games/tournament/'+selected_tournament.get()+'/'+game+'.xlsx',index=False)
-    
     teams=selected_match.get().split('_')
     if teams[0]==selected_team.get():
         team_against=teams[2]
     else:
         team_against=teams[0]
-        
+    create_summary('./games/tournament/'+selected_tournament.get()+'/', ['Name','Team','Position'])
+   
     #save to player directory
     player_data={'Tournament':selected_tournament.get(),'Team against':team_against}
-    def removekey(d, key):
-        r = dict(d)
-        del r[key]
-        return r
+    
     #combines all the stats into one dictionary
     player_data={**player_data,**data}
     team_data=player_data.copy()
@@ -783,7 +805,25 @@ def save():
     #save data to excel sheet    
     match_df=pd.DataFrame(main_data)
     match_df.to_excel(team_dir+selected_tournament.get()+'/'+game+'.xlsx',index=False)
+    #create team summary for each tournament
+    create_summary(team_dir+selected_tournament.get()+'/', ['Name','Position'])
+    
+    #create totals sheets-per season
+    tournament_list= [f.name for f in os.scandir('./games/tournament/') if f.is_dir()] #gets list of tournaments
+    years=[item.split('-', 1)[1] for item in tournament_list] #gets the year of each tournament
+    years=list(set(years)) #removes duplicate years
+    for season in years:
+        #for each season get all of the totals from the tournaments in that year
+        season_stats=pd.DataFrame()
+        for tournament in tournament_list: 
+            if tournament.split('-',1)[1]==season:
+                season_stats=season_stats.append(pd.read_excel('./games/tournament/'+tournament+'/'+'Totals.xlsx',index=True).to_dict('records'))
+                season_stats=season_stats.fillna(method='ffill')
+        #group whole season stats by player and position
+        season_stats=season_stats.groupby(['Name','Position']).sum()
+        season_stats.to_excel('./games/season_results/'+season+'.xlsx',index=True)
 
+    #reset values
     goals_allowed.set(0)
     chaser_data.fromkeys(chaser_data,0)
     beater_data.fromkeys(beater_data,0)
@@ -817,14 +857,14 @@ btn_save_results['state']='disabled'
 
 
 
-def file_exists(file_name):
+def file_exists(path,file_name):
     #if file exists add a number to the end of the file rather than overwriting
-    if os.path.isfile('./games/game_def/'+file_name):
+    if os.path.isfile(path+file_name):
         expand = 1
         while True:
             expand += 1
             new_file_name = file_name.split(".")[0] + str(expand) +'.'+file_name.split('.')[1]
-            if os.path.isfile('./games/game_def'+new_file_name):
+            if os.path.isfile(path+new_file_name):
                 continue
             else:
                 file_name = new_file_name
@@ -838,7 +878,7 @@ def window_add_match():
     #creates the add match window                                                
     wd_add_match=tk.Toplevel() #add this to only open with command
     wd_add_match.title('Add New Match')
-    wd_add_match.geometry('710x530')               #sets default window size
+    wd_add_match.geometry('630x530')               #sets default window size
     wd_add_match.iconbitmap('hoops_icon.ico')      #sets the window icon
     lbl_error=tk.Label(wd_add_match,text=' ')
 
@@ -869,7 +909,7 @@ def window_add_match():
                 df_match=df_match.append({'Name':item,
                                               'Team':ent_team2.get()},ignore_index=True)
                                           
-            tournament=ent_tournament.get().upper()+ent_year.get()
+            tournament=ent_tournament.get().upper()+'-'+ent_year.get()
             #makes the folder for the tournament if it doesnt exist
             if os.path.exists('./games/game_def/'+tournament+'/')==False:
                 os.mkdir('./games/game_def/'+tournament+'/')
@@ -880,7 +920,7 @@ def window_add_match():
             if os.path.isfile('./games/game_def/'+tournament+'/'+match_name)==True:
                 file_check=messagebox.askyesno('Save File','File already exists \n would you like to overwrite?')
                 if file_check==0:
-                    tournament=file_exists(ent_tournament.get()+'.csv')
+                    tournament=file_exists('./games/game_def/',ent_tournament.get()+'.csv')
             
             #saves the file to the correct folder
             df_match.to_csv('./games/game_def/'+tournament+'/'+match_name,index=False)        
@@ -1015,11 +1055,141 @@ def window_add_match():
     btn_add_match=tk.Button(wd_add_match,text='add new match',command=add_match,width=20,height=1)
     btn_add_match.grid(row=100,column=1)
 
+def mergefolders(root_src_dir, root_dst_dir):
+    for src_dir, dirs, files in os.walk(root_src_dir):
+        dst_dir = src_dir.replace(root_src_dir, root_dst_dir, 1)
+        if not os.path.exists(dst_dir):
+            os.makedirs(dst_dir)
+        for file_ in files:
+            src_file = os.path.join(src_dir, file_)
+            dst_file = os.path.join(dst_dir, file_)
+            if os.path.exists(dst_file):
+                os.remove(dst_file)
+            shutil.copy(src_file, dst_dir)
+            
+def import_match():
+    #function to add a match and sync its contents with the rest of the data
+    #gets the location of the file
+    try:
+        tournament_loc=filedialog.askdirectory(initialdir='/',title='Import Tournament')
+    except:
+        pass
+    tournament=tournament_loc.split('/')[-1] #gets tournament name
+    playerlist=list_files1('./games/player/','.xlsx') #gets current player list
+    playernames=[item.split('.', 1)[0] for item in playerlist] #gets just player names
 
+    matchlist=list_files1(tournament_loc, '.xlsx') #gets all files in the folder
+    #iterates through each match
+    for match in matchlist:
+        #print(match)
+        if match == 'Totals.xlsx':
+            #if the current file is called totals skip it
+            continue
+        teams=match.split('_') #gets the team names
+        #print(teams)
+        teams.remove('vs')
+        teams.remove('.xlsx')
+        
+        df=pd.read_excel(tournament_loc+'/'+match,index=False)
+        #print(df)
+        
+        team1_players=[]
+        team2_players=[]
+        for rownum in df.index:
+            #iterates through every line
+            data_list=(df.iloc[rownum].to_dict())
+            #updates a players data
+            player=pd.DataFrame()
+            if data_list['Team']==teams[0]:
+                data_list['Team against']=teams[1]
+            else:
+                data_list['Team against']=teams[0]
+
+            if data_list['Name'] in playernames:
+                #if the player exists
+                player=(pd.read_excel('./games/player/'+data_list['Name']+'.xlsx').to_dict('records'))
+                data_list['Tournament']=tournament
+                player.append(data_list)
+                df2=pd.DataFrame(player)
+            else:
+               df2=pd.DataFrame([data_list])
+            del df2['Name']
+            df2.to_excel('./games/player/'+data_list['Name']+'.xlsx',index=False)
+            
+            
+            if data_list['Team']==teams[0]:
+                team1_players.append(data_list)
+            elif data_list['Team']==teams[1]:
+                team2_players.append(data_list)
+                
+        df_team=[]        
+        df_team.append(pd.DataFrame(team1_players))
+        df_team.append(pd.DataFrame(team2_players))
+       
+        for team in range(len(df_team)):
+            #print('team_row')
+            #print(df_team[team].iloc[0]['Team'])
+            team_dir='./games/team/'+df_team[team].iloc[0]['Team']+'/'
+            #print('team dir- ',team_dir)
+            #print(df_team[team])
+            df_team[team].drop(['Team'],axis=1)
+            
+            #adds or updates team data
+            #makes sure team folder exists
+            if os.path.exists(team_dir)==False:
+                os.mkdir(team_dir)
+                #makes sure the tournament folder exists to store results
+            if os.path.exists(team_dir+tournament+'/')==False:
+                os.mkdir(team_dir+tournament+'/')
+                #if the file already exists ask to increment file name
+            if os.path.isfile(team_dir+tournament+'/'+match)==True:
+                file_name=file_exists(team_dir+tournament+'/',match)
+            else:
+                file_name=match
+            df_team[team].to_excel(team_dir+tournament+file_name,index=False)
+            #create team summary for each tournament
+            create_summary(team_dir+tournament+'/', ['Name','Position'])
+
+    
+        
+        #adds to tournament folder
+        tournament_dir='./games/tournament/'+tournament+'/'
+        if os.path.exists(tournament_dir)==False:
+            os.mkdir(tournament_dir)
+        if os.path.isfile(tournament_dir+match)==True:
+            file_name=file_exists(tournament_dir+match,match)
+        else:
+            file_name=match
+        df.to_excel(tournament_dir+file_name,index=False)
+        create_summary(tournament_dir, ['Name','Team','Position'])
+        
+    #create totals sheets-per season
+    tournament_list= [f.name for f in os.scandir('./games/tournament/') if f.is_dir()] #gets list of tournaments
+    years=[item.split('-', 1)[1] for item in tournament_list] #gets the year of each tournament
+    years=list(set(years)) #removes duplicate years
+    for season in years:
+        #for each season get all of the totals from the tournaments in that year
+        season_stats=pd.DataFrame()
+        for tournament in tournament_list: 
+            if tournament.split('-',1)[1]==season:
+                season_stats=season_stats.append(pd.read_excel('./games/tournament/'+tournament+'/'+'Totals.xlsx',index=True).to_dict('records'))
+                season_stats=season_stats.fillna(method='ffill')
+        #group whole season stats by player and position
+        season_stats=season_stats.groupby(['Name','Position']).sum()
+        season_stats.to_excel('./games/season_results/'+season+'.xlsx',index=True)
+        
+    
+    ## Try to remove tree; if failed show an error using try...except on screen
+    try:
+        shutil.rmtree(tournament_loc)
+    except OSError as e:
+        messagebox.showerror('Error',"Error: %s - %s." % (e.filename, e.strerror))
+    
 #file menu
 file_menu=tk.Menu(main_menu,tearoff=0)
 main_menu.add_cascade(label='File',menu=file_menu)
 file_menu.add_command(label='Add Match',command=window_add_match)
+file_menu.add_command(label='Import Match',command=import_match)
 file_menu.add_command(label='Exit',command=root.quit)
 #view menu
 view_menu=tk.Menu(main_menu,tearoff=0)
