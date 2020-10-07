@@ -3,10 +3,10 @@ A test program made in tkinter and python to enable users to measure stats from 
 This will eventually be made into an exe but currently this is not working correctly.  
 ### TODO
 - upload to a central google sheet
-- ~~add total stats per year that autoupdates
+- ~~add total stats per year that autoupdates~~
 - separate tabs for each position
-- ~~add totals for each tournament and each season
-- ~~add way to sync files when a new file is added
+- ~~add totals for each tournament and each season~~
+- ~~add way to sync files when a new file is added~~
 ### The main file is QuidAnalysisMain
 ## Running the script
 Make sure you have all the relevant modules installed by running **install modules** script.  
