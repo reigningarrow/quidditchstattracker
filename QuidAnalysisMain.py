@@ -593,10 +593,10 @@ def card_fn(data):
         if bt_turnover==1:
             beater_data['control lost']=beater_data['control lost']+1
     #if getting the card would lead to a double yellow, make it a red card        
-    if cards['yellow']==2:
-        cards['red']=1
+    #if cards['yellow']==2:
+        #cards['red']=1
     #if player gets a red card they're out of the game
-    if cards['red']==1:
+    if cards['red']==1 or cards['yellow']==2:
         for child in cardframe.winfo_children():
             child.configure(state='disable')
         btn_on_pitch['state']='disabled'
@@ -686,8 +686,8 @@ def score(data,position):
 
     #calculates negative points for cards        
     score+=-1.5*data['blue']-0.5*data['goals allowed']
-    if data['red']==1 and data['yellow']==2:
-         score+=-5*data['red']
+    if data['red']==1 or data['yellow']==2:
+         score+=-10
     else:
          score+=-3*data['yellow']-5*data['red']
     return(score)
