@@ -47,7 +47,7 @@ root=tk.Tk()
 #sets root window basic info
 root.iconbitmap('hoops_icon.ico')      #sets the window icon
 root.title('Quidditch Analysis Alpha')  #sets window title       
-root.geometry('470x650')  
+root.geometry('470x690')  
     
 #add a menu bar
 main_menu=tk.Menu(root)
@@ -349,13 +349,14 @@ chaserframe=tk.Frame(root,borderwidth=1)
 
 #creates a dictionary of values of info to be gathered
 chaser_data={'drive goal':0,'drive attempt':0,'completed drive percent':0,'shot percent':0,'shot goal':0,'shot target':0,'shot miss':0,
-             'shot attempt':0,'assist':0,'successful pass percent':0,'pass complete':0,'pass miss':0,'pass':0,
-             'catch percent':0,'catch-':0,'drop catch':0,'targeted':0,'broken tackle':0,'block':0,
+             'shot attempt':0,'assist':0,'short pass percent':0,'short pass complete':0,'short pass miss':0,'short pass':0,
+             'long pass percent':0,'long pass complete':0,'long pass miss':0,'long pass':0,'catch percent':0,'catch-':0,'drop catch':0,'targeted':0,
+             'broken tackle':0,'block':0,
              'intercept':0,'completed tackle':0,'partial tackle':0,'turnover forced':0}
 #dictionary of extra stuff that didnt need buttons
 chaser_extra={'shot goal':'shot attempt','shot target':'shot attempt',
-              'shot miss':'shot attempt','pass complete':'pass','pass miss':'pass',
-              'catch-':'targeted','drop catch':'targeted'} 
+              'shot miss':'shot attempt','short pass complete':'short pass','short pass miss':'short pass',
+              'long pass complete':'long pass','long pass miss':'long pass','catch-':'targeted','drop catch':'targeted'} 
 
 
 def add_value(name):
@@ -373,8 +374,10 @@ btn_ch_shot_goal    =tk.Button(chaserframe,text='Shot goal',width=int(button_wid
 btn_ch_shot_tgt     =tk.Button(chaserframe,text='Shot on target',width=int(button_width/3+1),command=lambda:add_value('shot target'))
 btn_ch_shot_miss    =tk.Button(chaserframe,text='Shot miss',width=int(button_width/3+1),command=lambda:add_value('shot miss'))
 btn_ch_assist       =tk.Button(chaserframe,text='Assist',width=button_width+6,command=lambda:add_value('assist'))
-btn_ch_pass_cpt     =tk.Button(chaserframe,text='Pass completed',width=int(button_width/2+2),command=lambda:add_value('pass complete'))
-btn_ch_pass_miss    =tk.Button(chaserframe,text='Pass missed',width=int(button_width/2+2),command=lambda:add_value('pass miss'))
+btn_ch_s_pass_cpt   =tk.Button(chaserframe,text= 'Short pass completed',width=int(button_width/2+2),command=lambda:add_value('short pass complete'))
+btn_ch_s_pass_miss  =tk.Button(chaserframe,text='Short pass missed',width=int(button_width/2+2),command=lambda:add_value('short pass miss'))
+btn_ch_l_pass_cpt   =tk.Button(chaserframe,text='Long pass complete',width=int(button_width/2+2),command=lambda:add_value('long pass complete'))
+btn_ch_l_pass_miss  =tk.Button(chaserframe,text='Long pass missed',width=int(button_width/2+2),command=lambda:add_value('long pass miss'))
 btn_ch_catch        =tk.Button(chaserframe,text='Catch',width=int(button_width/2+2),command=lambda:add_value('catch-'))
 btn_ch_drp_catch    =tk.Button(chaserframe,text='Drop catch',width=int(button_width/2+2),command=lambda:add_value('drop catch'))
 btn_ch_brk_tkl      =tk.Button(chaserframe,text='Broken tackle',width=button_width+6,command=lambda:add_value('broken tackle'))
@@ -393,18 +396,20 @@ btn_ch_shot_goal.grid(row=2,column=0,columnspan=4)
 btn_ch_shot_miss.grid(row=2,column=4,columnspan=4)
 btn_ch_shot_tgt.grid(row=2,column=8,columnspan=4)
 btn_ch_assist.grid(row=3,column=0,columnspan=12)
-btn_ch_pass_cpt.grid(row=4,column=0,columnspan=6)
-btn_ch_pass_miss.grid(row=4,column=6,columnspan=6)
-btn_ch_catch.grid(row=5,column=0,columnspan=6)
-btn_ch_drp_catch.grid(row=5,column=6,columnspan=6)
-btn_ch_brk_tkl.grid(row=6,column=0,columnspan=12)
+btn_ch_s_pass_cpt.grid(row=4,column=0,columnspan=6)
+btn_ch_s_pass_miss.grid(row=4,column=6,columnspan=6)
+btn_ch_l_pass_cpt.grid(row=5,column=0,columnspan=6)
+btn_ch_l_pass_miss.grid(row=5,column=6,columnspan=6)
+btn_ch_catch.grid(row=6,column=0,columnspan=6)
+btn_ch_drp_catch.grid(row=6,column=6,columnspan=6)
+btn_ch_brk_tkl.grid(row=7,column=0,columnspan=12)
 
-lbl_ch_defence.grid(row=7,column=0,columnspan=12,pady=(5,0))
-btn_ch_pass_blk.grid(row=8,column=0,columnspan=6)
-btn_ch_intercept.grid(row=8,column=6,columnspan=6)
-btn_ch_tackle_cpt.grid(row=9,column=0,columnspan=6)
-btn_ch_tackle_ptl.grid(row=9,column=6,columnspan=6)
-btn_ch_turnover_fcd.grid(row=10,column=0,columnspan=12)
+lbl_ch_defence.grid(row=8,column=0,columnspan=12,pady=(5,0))
+btn_ch_pass_blk.grid(row=9,column=0,columnspan=6)
+btn_ch_intercept.grid(row=9,column=6,columnspan=6)
+btn_ch_tackle_cpt.grid(row=10,column=0,columnspan=6)
+btn_ch_tackle_ptl.grid(row=10,column=6,columnspan=6)
+btn_ch_turnover_fcd.grid(row=11,column=0,columnspan=12)
 
 #chaserframe.grid(row=5,column=0,columnspan=3, pady=(20,0))
 #beater data
@@ -626,7 +631,8 @@ def score(data,position):
     if position=='Keeper/Chaser' or position=='Chaser':
         score=(data['drive goal']+data['shot goal']-0.1*data['shot miss']
                 -0.1*(data['drive attempt']-data['drive goal'])+0.2*data['shot target']
-                +0.5*data['assist']+0.2*data['pass complete']-0.05*data['pass miss']
+                +0.5*data['assist']+0.2*data['short pass complete']-0.05*data['short pass miss']
+                +0.3*data['long pass complete']-0.1*data['long pass miss']
                 +0.1*data['catch-']-0.05*data['drop catch']+0.05*data['broken tackle']
                 +0.05*data['block']+0.8*data['intercept']+0.8*data['turnover forced']
                 +0.5*data['completed tackle']+0.25*data['partial tackle'])
@@ -640,11 +646,17 @@ def score(data,position):
                 score+=2.5
             elif data['shot percent']<0.3:
                 score+=-2
-        if data['pass']>0:
-            if data['successful pass percent']>0.75:
+        if data['short pass']>0:
+            if data['short pass percent']>0.75:
                 score+=2
-            elif data['successful pass percent']<0.3:
+            elif data['short pass percent']<0.3:
                 score+=-1.
+        if data['long pass']>0:
+            if data['long pass percent']>0.75:
+                score+=4
+            elif data['long pass percent']<0.3:
+                score+=-2.
+
         if data['targeted']>0:
             if data['catch percent']>0.75:
                 score+=2
@@ -695,7 +707,8 @@ def create_summary(directory,group_cols):
     try:
         cols_agg={'Score':'sum','Effectiveness':'sum','Pitch Time':'sum','drive goal':'sum','drive attempt':'sum','completed drive percent':'mean',
           'shot percent':'mean','shot goal':'sum','shot target':'sum','shot miss':'sum',
-             'shot attempt':'sum','assist':'sum','successful pass percent':'mean','pass complete':'sum','pass miss':'sum','pass':'sum',
+             'shot attempt':'sum','assist':'sum','short pass percent':'mean','short pass complete':'sum','short pass miss':'sum','short pass':'sum',
+             'long pass percent':'mean','long pass complete':'sum','long pass miss':'sum','long pass':'sum',
              'catch percent':'mean','catch-':'sum','drop catch':'sum','targeted':'sum','broken tackle':'sum','block':'sum',
              'intercept':'sum','completed tackle':'sum','partial tackle':'sum','turnover forced':'sum',
              'control gained':'sum','control lost':'sum','control percent':'mean',
@@ -731,8 +744,10 @@ def save():
             chaser_data['completed drive percent']=round((chaser_data['drive goal']/chaser_data['drive attempt'])*100,2)
         if chaser_data['shot attempt']>0:
             chaser_data['shot percent']=round((chaser_data['shot goal']/chaser_data['shot attempt'])*100,2)
-        if chaser_data['pass']>0:
-            chaser_data['successful pass percent']=round((chaser_data['pass complete']/chaser_data['pass'])*100,2)
+        if chaser_data['short pass']>0:
+            chaser_data['short pass percent']=round((chaser_data['short pass complete']/chaser_data['short pass'])*100,2)
+        if chaser_data['long pass']>0:
+            chaser_data['long pass percent']=round((chaser_data['long pass complete']/chaser_data['long pass'])*100,2)
         if chaser_data['targeted']>0:
             chaser_data['catch percent']=round((chaser_data['catch-']/chaser_data['targeted'])*100,2)
         
@@ -861,8 +876,9 @@ def save():
             
             try:
                 cols_agg={'Score':'sum','Effectiveness':'sum','Pitch Time':'sum','drive goal':'sum','drive attempt':'sum','completed drive percent':'mean',
-                          'shot percent':'mean','shot goal':'sum','shot target':'sum','shot miss':'sum',
-             'shot attempt':'sum','assist':'sum','successful pass percent':'mean','pass complete':'sum','pass miss':'sum','pass':'sum',
+          'shot percent':'mean','shot goal':'sum','shot target':'sum','shot miss':'sum',
+             'shot attempt':'sum','assist':'sum','short pass percent':'mean','short pass complete':'sum','short pass miss':'sum','short pass':'sum',
+             'long pass percent':'mean','long pass complete':'sum','long pass miss':'sum','long pass':'sum',
              'catch percent':'mean','catch-':'sum','drop catch':'sum','targeted':'sum','broken tackle':'sum','block':'sum',
              'intercept':'sum','completed tackle':'sum','partial tackle':'sum','turnover forced':'sum',
              'control gained':'sum','control lost':'sum','control percent':'mean',
@@ -1252,8 +1268,9 @@ def import_match():
             
             try:
                 cols_agg={'Score':'sum','Effectiveness':'sum','Pitch Time':'sum','drive goal':'sum','drive attempt':'sum','completed drive percent':'mean',
-                          'shot percent':'mean','shot goal':'sum','shot target':'sum','shot miss':'sum',
-             'shot attempt':'sum','assist':'sum','successful pass percent':'mean','pass complete':'sum','pass miss':'sum','pass':'sum',
+          'shot percent':'mean','shot goal':'sum','shot target':'sum','shot miss':'sum',
+             'shot attempt':'sum','assist':'sum','short pass percent':'mean','short pass complete':'sum','short pass miss':'sum','short pass':'sum',
+             'long pass percent':'mean','long pass complete':'sum','long pass miss':'sum','long pass':'sum',
              'catch percent':'mean','catch-':'sum','drop catch':'sum','targeted':'sum','broken tackle':'sum','block':'sum',
              'intercept':'sum','completed tackle':'sum','partial tackle':'sum','turnover forced':'sum',
              'control gained':'sum','control lost':'sum','control percent':'mean',
