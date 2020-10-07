@@ -28,7 +28,7 @@ To save a player press the Save player button. This will save to three excel fil
 These will be saved in the relevant folders within the games folder
 ### Add match
 To add a match go to the **file menu** and click on **add match**. This will bring up the add match window.  
-You will then need to add in a tournament name and year and the teams playing. Then type in the player name and press the **add player** button where it will be added to their teams list box on the right hand side.  
+You will then need to add in a tournament name, season in which it was played and the teams playing. Then type in the player name and press the **add player** button where it will be added to their teams list box on the right hand side.  
 If a players name is added incorrectly select them in the listbox and press the **remove player** button to remove them from the teams roster.  
 Once the rosters have been completed press the **Add new match** button which will save the rosters and teams for that game in the tournament.  
 
