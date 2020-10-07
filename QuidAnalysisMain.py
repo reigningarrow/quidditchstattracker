@@ -691,9 +691,29 @@ def create_summary(directory,group_cols):
         #append all the data from each match to a dataframe
         df_match=df_match.append(pd.read_excel(directory+match).to_dict('records'))
     df_all=pd.DataFrame(df_match)
-    #groups the dataframes from
-    df_summary=df_all.groupby(group_cols).sum()
-    df_summary.to_excel(directory+'Totals.xlsx',index=True)
+    #groups the dataframes
+    try:
+        cols_agg={'Score':'sum','Effectiveness':'sum','Pitch Time':'sum','drive goal':'sum','drive attempt':'sum','completed drive percent':'mean',
+          'shot percent':'mean','shot goal':'sum','shot target':'sum','shot miss':'sum',
+             'shot attempt':'sum','assist':'sum','successful pass percent':'mean','pass complete':'sum','pass miss':'sum','pass':'sum',
+             'catch percent':'mean','catch-':'sum','drop catch':'sum','targeted':'sum','broken tackle':'sum','block':'sum',
+             'intercept':'sum','completed tackle':'sum','partial tackle':'sum','turnover forced':'sum',
+             'control gained':'sum','control lost':'sum','control percent':'mean',
+             'no bludgers forced':'sum','no bludgers own':'sum','forced pass':'sum','forced turnover':'sum',
+             'team goal':'sum','shot block':'sum','catch':'sum','snitch catch':'sum','bubble created':'sum',
+             'bubble broken':'sum','bubble lost':'sum','bubble percent':'mean',
+             'time attacking':'sum','time defending':'sum','catch attempt':'sum','snitch catch':'sum',
+             'blue':'sum','yellow':'sum','red':'sum'}
+        df_summary=df_all.groupby(group_cols).agg(cols_agg)
+    except:
+        df_summary=df_all.groupby(group_cols).sum()
+        
+    df_avg=df_all.groupby(group_cols).mean()
+    #df_summary.to_excel(directory+'Totals.xlsx',index=True)
+    with pd.ExcelWriter(directory+'Totals.xlsx') as writer:  
+        df_summary.to_excel(writer, sheet_name='Totals',index=True)
+        df_avg.to_excel    (writer, sheet_name='Averages',index=True)
+
     
     
 def save():
@@ -836,12 +856,33 @@ def save():
         #print('season_stats-')
         #print(season_stats)
         #group whole season stats by player and position
-        try:            
-            season_stats=season_stats.groupby(['Name','Position']).sum()
+        try:   
+            season_avg=season_stats.groupby(['Name','Position']).mean()
+            
+            try:
+                cols_agg={'Score':'sum','Effectiveness':'sum','Pitch Time':'sum','drive goal':'sum','drive attempt':'sum','completed drive percent':'mean',
+                          'shot percent':'mean','shot goal':'sum','shot target':'sum','shot miss':'sum',
+             'shot attempt':'sum','assist':'sum','successful pass percent':'mean','pass complete':'sum','pass miss':'sum','pass':'sum',
+             'catch percent':'mean','catch-':'sum','drop catch':'sum','targeted':'sum','broken tackle':'sum','block':'sum',
+             'intercept':'sum','completed tackle':'sum','partial tackle':'sum','turnover forced':'sum',
+             'control gained':'sum','control lost':'sum','control percent':'mean',
+             'no bludgers forced':'sum','no bludgers own':'sum','forced pass':'sum','forced turnover':'sum',
+             'team goal':'sum','shot block':'sum','catch':'sum','snitch catch':'sum','bubble created':'sum',
+             'bubble broken':'sum','bubble lost':'sum','bubble percent':'mean',
+             'time attacking':'sum','time defending':'sum','catch attempt':'sum','snitch catch':'sum',
+             'blue':'sum','yellow':'sum','red':'sum'}
+                season_stats=season_stats.groupby(['Name','Position']).agg(cols_agg)
+            except:
+                season_stats=season_stats.groupby(['Name','Position']).sum()
+
         except Exception as exception:
             messagebox.showerror('Error Grouping Stats','There has been an error grouping the season statistics \n'+
                                  exception)
-        season_stats.to_excel('./games/season_results/'+season+'.xlsx',index=True)
+        with pd.ExcelWriter('./games/season_results/'+season+'.xlsx') as writer:  
+            season_avg.to_excel  (writer, sheet_name='Totals',index=True)
+            season_stats.to_excel(writer, sheet_name='Averages',index=True)
+
+        #season_stats.to_excel('./games/season_results/'+season+'.xlsx',index=True)
 
     #reset values
     goals_allowed.set(0)
@@ -905,7 +946,10 @@ def window_add_match():
     def add_match():  
         # a lazy error label
         #if the entry boxes are filled in
-        if not ent_tournament.get()=='' and not ent_team1.get()=='' and not ent_team2.get()=='' and not lstbx_team1.size()==0 and not lstbx_team2.size()==0 and not ent_year.get()==0:
+        if (not ent_tournament.get()=='' and not ent_team1.get()=='' 
+            and not ent_team2.get()=='' and not lstbx_team1.size()==0 
+            and not lstbx_team2.size()==0 and not len(ent_year.get())==0
+            and not '-' in ent_year.get()):
             #create dataframe 
             df_match=pd.DataFrame(columns=['Name','Team'])
         
@@ -964,6 +1008,16 @@ def window_add_match():
             #if fields not filled in show error message
             lbl_error.config(text='Error: A field is empty not saving match data',fg='red')
             lbl_error.grid(row=99,column=0,columnspan=3)
+            
+            error_dict={'Team 1':lstbx_team1.size(),'Team 2':lstbx_team2.size(),
+                        'Team 1 name':len(ent_team1.get()),'Team 2 name':len(ent_team2.get())
+                        ,'Tournament name':len(ent_tournament.get()),'Season':len(ent_year.get())}
+            for error in error_dict:
+                if error_dict[error]==0:
+                    error_message=f'{error} error. \n This field is empty'
+                    messagebox.showwarning('Add Match Error',error_message)
+            if '-' in ent_year.get():
+                messagebox.showwarning('Add Match Error','The entry for season must not contain a - in it')
     
     def add_player_t1():
         #when the add player button is pressed it adds the player to the list box
@@ -980,7 +1034,7 @@ def window_add_match():
     #gets and places label and entry box for match name    
     lbl_tournament=tk.Label(wd_add_match,text='Tournament')
     ent_tournament=tk.Entry(wd_add_match,width=50)
-    lbl_year      =tk.Label(wd_add_match,text='Year',width=6)
+    lbl_year      =tk.Label(wd_add_match,text='Season',width=6)
     ent_year      =tk.Entry(wd_add_match,width=6)
     
     ent_tournament.grid(row=0,column=1,pady=(10,20))
@@ -1098,8 +1152,12 @@ def import_match():
         #print(teams)
         teams.remove('vs')
         teams.remove('.xlsx')
-        
-        df=pd.read_excel(tournament_loc+'/'+match)
+        try:
+            df=pd.read_excel(tournament_loc+'/'+match)
+        except:
+            #if it can't read the file in abort loading in all files 
+            messagebox.showerror('Import Error',f'Cannot import {match} \n aborting import')
+            return
         #print(df)
         
         team1_players=[]
@@ -1189,8 +1247,31 @@ def import_match():
                 season_stats=season_stats.append(pd.read_excel('./games/tournament/'+tournament+'/'+'Totals.xlsx').to_dict('records'))
                 season_stats=season_stats.fillna(method='ffill')
         #group whole season stats by player and position
-        season_stats=season_stats.groupby(['Name','Position']).sum()
-        season_stats.to_excel('./games/season_results/'+season+'.xlsx',index=True)
+        try:   
+            season_avg=season_stats.groupby(['Name','Position']).mean()
+            
+            try:
+                cols_agg={'Score':'sum','Effectiveness':'sum','Pitch Time':'sum','drive goal':'sum','drive attempt':'sum','completed drive percent':'mean',
+                          'shot percent':'mean','shot goal':'sum','shot target':'sum','shot miss':'sum',
+             'shot attempt':'sum','assist':'sum','successful pass percent':'mean','pass complete':'sum','pass miss':'sum','pass':'sum',
+             'catch percent':'mean','catch-':'sum','drop catch':'sum','targeted':'sum','broken tackle':'sum','block':'sum',
+             'intercept':'sum','completed tackle':'sum','partial tackle':'sum','turnover forced':'sum',
+             'control gained':'sum','control lost':'sum','control percent':'mean',
+             'no bludgers forced':'sum','no bludgers own':'sum','forced pass':'sum','forced turnover':'sum',
+             'team goal':'sum','shot block':'sum','catch':'sum','snitch catch':'sum','bubble created':'sum',
+             'bubble broken':'sum','bubble lost':'sum','bubble percent':'mean',
+             'time attacking':'sum','time defending':'sum','catch attempt':'sum','snitch catch':'sum',
+             'blue':'sum','yellow':'sum','red':'sum'}
+                season_stats=season_stats.groupby(['Name','Position']).agg(cols_agg)
+            except:
+                season_stats=season_stats.groupby(['Name','Position']).sum()
+
+        except Exception as exception:
+            messagebox.showerror('Error Grouping Stats','There has been an error grouping the season statistics \n'+
+                                 exception)
+        with pd.ExcelWriter('./games/season_results/'+season+'.xlsx') as writer:  
+            season_avg.to_excel  (writer, sheet_name='Totals',index=True)
+            season_stats.to_excel(writer, sheet_name='Averages',index=True)
         
     
     ## Try to remove tree; if failed show an error using try...except on screen
