@@ -1,0 +1,48 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>instructions</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h1 id="instructions">Instructions</h1>
+<h2 id="recording-player-data">Recording player data</h2>
+<p>To record data first select a tournament and press the <strong>Select tournament</strong> button. This will then allow the match selection from the dropdown box. Press <strong>Select match</strong> once a selection has been made. The list of players for that match will then be enabled; from this select the player and the position they played (for ease of reference any player selected from the dropdown menu has their team displayed on the right hand side of the screen).<br>
+Once this is done press the <strong>Select player</strong> button which will now bring up the data collection buttons most of which are initially greyed out. These are position dependent.</p>
+<h2 id="section"></h2>
+<p>To record data about a player press the relevant button when they commit said action. This will record the data to a dataframe ready to be exported to an excel document.<br>
+If a player receives two yellow cards or one red card they are ejected from the game and all the buttons to record data become greyed out.</p>
+<h2 id="saving-a-player">Saving a player</h2>
+<p>Once a player’s stats for the match press the <strong>Save player</strong> button which will then export the statistics to the relevant files.<br>
+This will then reset all statistics back to zero so that a new player is abled to be recorded.</p>
+<h2 id="player-with-multiple-positions">Player with multiple positions</h2>
+<p>If a player has multiple positions within one game such as a keeper and a seeker this must be recorded as if each position was a separate player as the program cannot currently account for this.</p>
+<p>Example:</p>
+<blockquote>
+<p><em>Player A</em> is initially a chaser but then becomes a seeker for a single stint before returning as a chaser they should be marked as off pitch whilst they are seeking until they return to the pitch as a chaser.</p>
+</blockquote>
+<h2 id="making-an-error">Making an error</h2>
+<p>If an error is made whilst recording a players statistics then the reset button should be pressed. This resets all the currently recorded statistics to 0. Therefore it is highly encouraged to not make a mistake as pressing this button means that the players data for the selected match will have to be recorded again from the beginning.</p>
+<h1 id="add-new-match">Add new match</h1>
+<p>To access the add match screen go to the file menu in the top left hand corner of the window. This will bring up a menu with the <strong>Add new match</strong> button. Clicking this will bring up a new window where a new match may be added to the database.</p>
+<h2 id="adding-a-new-match">Adding a new match</h2>
+<p>To add a new match fill in the name of the tournament, season it took place in and the team names in the relevant boxes. Then type a name of a player in the first team (team 1) into the player name box and press the <strong>add player</strong> button. This will add them to the top player list box on the right-hand side of the window. Keep adding players until the roster is complete and repeat this for the players on the other team.</p>
+<h2 id="removing-a-player-from-a-roster">Removing a player from a roster</h2>
+<p>To remove a player from either teams roster select the players name in the player list box and press <strong>Remove player</strong>. This player will now disappear from the box and is removed from the roster.</p>
+<h2 id="saving-match">Saving match</h2>
+<p>To save a match press the save match button. If every field is not filled in an error message will appear and the match will not be saved.<br>
+If the match has saved then all the fields will be cleared.<br>
+If a match with the same name already exists a prompt will appear asking to overwrite a previous match, if no this will add a number to the end of the filename.</p>
+<h1 id="import-match">Import Match</h1>
+<p>To import a match/matches go to the top left of the window and click the <strong>File</strong> menu button. Then click the <strong>Import Match</strong> button. This will open up a window to select a folder. Navigate to the relevant tournament folder and press ok. This will then import all files inside the tournament folder. If an error occurs the program will open an error prompt and the matches will not be imported. If a match with the same name already exists the program will add a number to the end of the imported match name.</p>
+<h2 id="note">Note</h2>
+<p>This is currently an alpha version of this program if there are any bugs or features you would like to implement please report it using the link below-<br>
+<a href="https://github.com/reigningarrow/quidditchstattracker/issues">https://github.com/reigningarrow/quidditchstattracker/issues</a></p>
+</div>
+</body>
+
+</html>

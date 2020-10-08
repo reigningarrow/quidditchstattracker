@@ -1297,6 +1297,8 @@ def import_match():
     except OSError as e:
         messagebox.showerror('Error',"Error: %s - %s." % (e.filename, e.strerror))
     
+def view_instructions():
+    os.startfile('instructions.html')
 #file menu
 file_menu=tk.Menu(main_menu,tearoff=0)
 main_menu.add_cascade(label='File',menu=file_menu)
@@ -1306,6 +1308,9 @@ file_menu.add_command(label='Exit',command=root.quit)
 #view menu
 view_menu=tk.Menu(main_menu,tearoff=0)
 main_menu.add_cascade(label='View',menu=view_menu)
-
+help_menu=tk.Menu(main_menu,tearoff=0)
+main_menu.add_cascade(label='Help',menu=help_menu)
+help_menu.add_command(label='View Instructions',command=view_instructions)
+help_menu.add_command(label='Report Bug')
 root.mainloop() 
 
