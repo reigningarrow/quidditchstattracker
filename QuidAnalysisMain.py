@@ -11,27 +11,6 @@ Program for recording quidditch stats using tkinter and pandas
 #TODO add new window to view stats
 #Potential TODO change save files to add to new tab instead of a new file every time
 
-#add data to new tab
-# import pandas as pd
-# import numpy as np
-# from openpyxl import load_workbook
-
-# path = r"C:\Users\fedel\Desktop\excelData\PhD_data.xlsx"
-
-# book = load_workbook(path)
-# writer = pd.ExcelWriter(path, engine = 'openpyxl')
-# writer.book = book
-
-# x3 = np.random.randn(100, 2)
-# df3 = pd.DataFrame(x3)
-
-# x4 = np.random.randn(100, 2)
-# df4 = pd.DataFrame(x4)
-
-# df3.to_excel(writer, sheet_name = 'x3')
-# df4.to_excel(writer, sheet_name = 'x4')
-# writer.save()
-# writer.close()
 
 
 import tkinter as tk
@@ -693,8 +672,11 @@ def score(data,position):
     return(score)
 
 def create_summary(directory,group_cols):
+    #print('dir- ',directory)
     #creates a summarised total
     matchlist=list(list_files1(directory, '.xlsx'))
+    #print('match list')
+    #print(matchlist)
     #basically so the totals doesn't keep getting added each time
     df_match=pd.DataFrame()
     if 'Totals.xlsx' in matchlist: 
@@ -703,6 +685,7 @@ def create_summary(directory,group_cols):
         #append all the data from each match to a dataframe
         df_match=df_match.append(pd.read_excel(directory+match).to_dict('records'))
     df_all=pd.DataFrame(df_match)
+    #print(df_all)
     #groups the dataframes
     try:
         cols_agg={'Score':'sum','Effectiveness':'sum','Pitch Time':'sum','drive goal':'sum','drive attempt':'sum','completed drive percent':'mean',
@@ -720,7 +703,9 @@ def create_summary(directory,group_cols):
         df_summary=df_all.groupby(group_cols).agg(cols_agg)
     except:
         df_summary=df_all.groupby(group_cols).sum()
-        
+    #print(df_summary)
+
+    #print('summary created')    
     df_avg=df_all.groupby(group_cols).mean()
     #df_summary.to_excel(directory+'Totals.xlsx',index=True)
     with pd.ExcelWriter(directory+'Totals.xlsx') as writer:  
@@ -1151,13 +1136,19 @@ def import_match():
     #gets the location of the file
     try:
         tournament_loc=filedialog.askdirectory(initialdir='/',title='Import Tournament')
+        #print('tournament_dir-',tournament_loc)
     except:
-        pass
+        print('error getting tournament location')
+        
     tournament=tournament_loc.split('/')[-1] #gets tournament name
-    playerlist=list_files1('./games/player/','.xlsx') #gets current player list
+    playerlist=list(list_files1('./games/player/','.xlsx')) #gets current player list
     playernames=[item.split('.', 1)[0] for item in playerlist] #gets just player names
 
-    matchlist=list_files1(tournament_loc, '.xlsx') #gets all files in the folder
+    matchlist=list(list_files1(tournament_loc, '.xlsx')) #gets all files in the folder
+    #print(tournament)
+    #print(playerlist)
+    #print(matchlist)
+    
     #iterates through each match
     for match in matchlist:
         #print(match)
@@ -1197,6 +1188,7 @@ def import_match():
             else:
                df2=pd.DataFrame([data_list])
             del df2['Name']
+            #print('player saved')
             df2.to_excel('./games/player/'+data_list['Name']+'.xlsx',index=False)
             
             
@@ -1234,8 +1226,11 @@ def import_match():
                 file_name=file_exists(team_dir+tournament+'/',match)
             else:
                 file_name=match
-            df_team[team].to_excel(team_dir+tournament+file_name,index=False)
+            #print('save location- ',team_dir+tournament+file_name)
+            df_team[team].to_excel(team_dir+tournament+'/'+file_name,index=False)
             #create team summary for each tournament
+            #print('test tournament dir')
+            #print(team_dir+tournament)
             create_summary(team_dir+tournament+'/', ['Name','Position'])
 
     
