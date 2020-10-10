@@ -654,14 +654,19 @@ def score(data,position):
             score += int('0467899'[max(int(data['control percent'])//10-5,0)])
         elif data['control percent']<0.4:
             score += -1*int('543200'[max(int(data['control percent'])//10-5,0)])
-        if data['bubble percent']>0.6:
-            score += int('0235999'[max(int(data['bubble percent'])//10-5,0)])
-        elif data['bubble percent']<0.4:
-            score += -1*int('752100'[max(int(data['bubble percent'])//10-5,0)])
+        if data['bubble percent']>0:
+            if data['bubble percent']>0.6:
+                score += int('0235999'[max(int(data['bubble percent'])//10-5,0)])
+            elif data['bubble percent']<0.4:
+                score += -1*int('752100'[max(int(data['bubble percent'])//10-5,0)])
             
     if position=='Seeker':
-        score=(500/data['time attacking']+0.01*data['time defending']
-               +2*data['catch attempt']+10*data['snitch catch'])  
+        if data['time attacking']>0:
+            score=(500/data['time attacking']+0.01*data['time defending']
+                   +2*data['catch attempt']+10*data['snitch catch'])
+        else:
+            score=(0.01*data['time defending']
+                   +2*data['catch attempt']+10*data['snitch catch'])
 
     #calculates negative points for cards        
     score+=-1.5*data['blue']-0.5*data['goals allowed']
