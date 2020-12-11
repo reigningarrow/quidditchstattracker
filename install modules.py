@@ -14,7 +14,7 @@ def install(package):
     
     
 modules=['pandas','numpy','tkinter','scipy','matplotlib','os','time','jinja2','openpyxl','xlrd'
-         ,'shutil','seaborn']
+         ,'shutil','seaborn','ft2font']
 for module in modules:
     try:
         install(module)

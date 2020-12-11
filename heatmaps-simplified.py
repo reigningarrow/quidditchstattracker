@@ -598,6 +598,17 @@ def save_data():
     if os.path.exists('./graphs/'+selected_tournament.get()+'/')==False:
         os.makedirs('./graphs/'+selected_tournament.get()+'/')
     dataframe.to_csv('./graphs/'+selected_tournament.get()+'/'+selected_match.get())
+    
+    #adds the data to total csv file and saves it
+    if os.file.exists('./graphs/totals.csv')==True:
+        df=pd.read_csv('./graphs/totals.csv')
+        df=df.append(dataframe)
+        df.to_csv('./graphs/totals.csv')
+    else:
+        dataframe.to_csv('./graphs/totals.csv')
+    
+        
+    
     bar.grid_forget() #removes the loading bar once done
     clear() #clears the data from the listbox and dataframe
 
