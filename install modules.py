@@ -14,9 +14,10 @@ def install(package):
     
     
 modules=['pandas','numpy','tkinter','scipy','matplotlib','os','time','jinja2','openpyxl','xlrd'
-         ,'shutil']
+         ,'shutil','seaborn']
 for module in modules:
     try:
         install(module)
     except:
         print(f'Can\'t install {module}')
+

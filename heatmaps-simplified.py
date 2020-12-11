@@ -13,7 +13,6 @@ from tkinter import ttk
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-import numpy as np
 import os
 
 #makes sure folder exists
@@ -39,6 +38,7 @@ lbl_pitch_img.grid(row=0,column=0,rowspan=rows,columnspan=cols)
 selection_frame=tk.Frame(root)
 #adds tournament selection button
 def select_tournament():
+    clear()
     #sets the tournament name
     selected_tournament.set(cb_tournament.get())
     tournament=cb_tournament.get()
@@ -129,15 +129,15 @@ lbl_select_player.grid(row=3,column=0,pady=(10,2),sticky='w')
 cb_player.grid(row=4,column=0,sticky='w',padx=(0,20))
 lbl_team.grid(row=4,column=2,sticky='w')
 cb_player['state']='disabled'
-lbl_team         ['state']='disabled'
+lbl_team ['state']='disabled'
 
 selection_frame.grid(row=0,column=1,rowspan=3,sticky='nsew')
 coords=tk.StringVar()
 button_num=tk.IntVar()
 button=[]   
 
-
-dataframe=pd.DataFrame()   
+idx=tk.IntVar()
+#dataframe=pd.DataFrame()   
 playername=0
 #team='team'
 
@@ -165,6 +165,7 @@ def click(row, col,number):
     
 def add_attempt(method):
     global dataframe
+    #dataframe=pd.DataFrame()
     #adds to dataframe
     try:
         #tries to get the last line in the dataframe
@@ -173,11 +174,16 @@ def add_attempt(method):
         prev_event=dataframe['event'].iloc[-1]
         #if theres a catch or pass interaction use that as the pass end 
         if (method=='catch' or method=='block' or method=='drop') and player.get!=prev_name and prev_event=='pass':
-            
-            dataframe=dataframe.append({'name':prev_name,'team':prev_team,'event':'pass end','coords':coords.get()},ignore_index=True)
+            d2=pd.DataFrame([{'id':idx.get()-1,'name':prev_name,'team':prev_team,'event':'pass end','coords':coords.get()}])
+            d2.set_index('id')
+            dataframe=dataframe.append(d2)
     except:
         pass
-    dataframe=dataframe.append({'name':player.get(),'team':team.get(),'event':method,'coords':coords.get()},ignore_index=True)
+    d2=pd.DataFrame([{'id':idx.get(),'name':player.get(),'team':team.get(),'event':method,'coords':coords.get()}])
+    d2.set_index('id')
+    dataframe=dataframe.append(d2)
+    dataframe.set_index('id')
+    idx.set(idx.get()+1)
 
     
     #changes selected button colour back to normal
@@ -199,7 +205,7 @@ def add_attempt(method):
     btn_reset.config(state='normal')
     print(dataframe) 
     #adds the item to listbox
-    lstbox_events.insert('end',(dataframe.tail(1).index.item()
+    lstbox_events.insert('end',((idx.get()-1)
                                 ,method,str(team.get()),str(player.get()),coords.get()))    
 '''
 def clear():
@@ -220,9 +226,11 @@ def clear():
 '''
 def clear():
     #delete everything
-    dataframe=dataframe.drop(dataframe.iloc[0:0],axis=1) #remove everything from dataframe
+    global dataframe
+    dataframe=pd.DataFrame()
+    #dataframe=dataframe.drop(dataframe.iloc[0:0],axis=1) #remove everything from dataframe
     lstbox_events.delete(0,'end') #removes everything from listbox
-    dataframe.reset_index(inplace=True)
+    #dataframe.reset_index(inplace=True)
     #need to now return the dataframe somehow
     #resets all the data
     coords.set('')
@@ -242,17 +250,17 @@ def clear():
         button[c].config(bg="SystemButtonFace")
 def remove():
     #deletes selected item from the listbox and drops it from the dataframe
-    try:
+    #try:
         vari=lstbox_events.get(lstbox_events.curselection())
         print(vari)
         print(lstbox_events.curselection())
-        index = lstbox_events.get(0, "end").index(tk.ANCHOR)
+        #index = lstbox_events.get(0, "end").index(tk.ANCHOR)
         lstbox_events.delete(tk.ANCHOR)  
-        dataframe.drop(index=index,inplace=True)
-        #dataframe.drop(index=vari[0],inplace=True)
-    except:
-        raise Exception("Currently can't remove some of the events in time, working on it")
-    print(dataframe)
+        #dataframe.drop(index=index,inplace=True)
+        dataframe.drop(index=vari[0],inplace=True)
+    #except:
+        #raise Exception("Currently can't remove some of the events in time, working on it")
+        print(dataframe)
 
 
 #Initial setup    
@@ -329,7 +337,7 @@ scrl_x_evt.configure(command=lstbox_events.xview)
 lstbox_events.configure(yscrollcommand=scrl_evt.set,xscrollcommand=scrl_x_evt.set)
 
 btn_reset=tk.Button(evt_frame,text='Clear',width=15,command=clear)
-btn_remove=tk.Button(evt_frame,text='Remove entry',width=15,command=remove)
+btn_remove=tk.Button(evt_frame,text='Remove entry',width=15,command=lambda:remove())
 
 
 lstbox_events.grid(row=0,column=30,rowspan=21,columnspan=3)
@@ -458,10 +466,6 @@ def save_data():
             #dataframe2=dataframe[dataframe.kind.isin(team)].copy()
             dataframe2=dataframe[dataframe[kind]==team]
 
-            if kind=='team':
-                #if plotting team maps set the team name so it can be used
-                #for save folder
-                o_team=team 
             #choose the types of graphs to be looked at individually
             #so shots and goals are grouped
             graphs=[['shot','goal'],['pass','catch','pass end','drop','block'],
@@ -521,8 +525,9 @@ def save_data():
                          colour='gray'
                          if d2['event']=='pass end':
                              #as the player isnt at the pass end remove that entry in kde coords
-                             del x_kde[-1]
-                             del y_kde[-1]
+                             if kind!='team':
+                                 del x_kde[-1]
+                                 del y_kde[-1]
                              try:
                                  evt=dataframe['event'].iloc[i+1]
                                  if evt=='catch':
@@ -552,7 +557,7 @@ def save_data():
                         
                         ax.add_patch(circle) #adds it to the graph
                 #fig.set_facecolor('green')
-                sns.kdeplot(x_kde, y_kde, shade = "True", color = "green", n_levels = 100)
+                sns.kdeplot(x_kde, y_kde, shade = "True", cmap='summer', n_levels = 100,alpha=0.8)
                 #if the length of the coords is greater than 0, then check if limits cos errors...
                 if len(x_kde)>6 and len(y_kde)>6:
                     #if its a shot goal graph then only do 1 half of the map
@@ -579,11 +584,11 @@ def save_data():
                                 +'/'+team+'/'+str(item[0])+'.png', dpi=100) 
                 elif kind=='name':
                     if os.path.exists('./graphs/'+selected_tournament.get()+'/'+match
-                                +'/'+o_team+'/')==False:
+                                +'/'+d2['team']+'/')==False:
                         os.makedirs('./graphs/'+selected_tournament.get()+'/'+match
-                                +'/'+o_team+'/')
+                                +'/'+d2['team']+'/')
                     fig.savefig('./graphs/'+selected_tournament.get()+'/'+match
-                                +'/'+o_team+'/'+team+str(item[0])+'.png', dpi=100,facecolor=fig.get_facecolor())
+                                +'/'+d2['team']+'/'+team+'-'+str(item[0])+'.png', dpi=100,facecolor=fig.get_facecolor())
                 plt.show()
                 #adds a bit to the end of the bar
                 bar['value'] +=1/it_length
@@ -601,9 +606,9 @@ def save_data():
 draw_pitch=tk.Button(text='draw pitch',command=lambda: createPitch(pitch='half'))
 #draw_pitch.grid(row=100,column=100)
 
-save=tk.Button(text='Save',command=save_data)
+save=tk.Button(text='Save',command=lambda:save_data())
 save.grid(rows=10,columns=5)
-def import_data():
+def import_data(dataframe):
     #opens file
     data=filedialog.askopenfilename(initialdir='.\graphs',title='Import match data',filetypes=('CSV','*.csv'))
     dataframe=dataframe.append(dataframe.read_csv(data))
@@ -614,7 +619,7 @@ def import_data():
 #file menu
 file_menu=tk.Menu(graphs_menu,tearoff=0)
 graphs_menu.add_cascade(label='File',menu=file_menu)
-file_menu.add_command(label='Import Data',command=import_data)
+file_menu.add_command(label='Import Data',command=lambda: import_data(dataframe))
 file_menu.add_command(label='Exit',command=root.quit)
 root.mainloop()
 #
