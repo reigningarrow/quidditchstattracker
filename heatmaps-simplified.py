@@ -20,6 +20,8 @@ if os.path.exists('./graphs/')==False:
     os.mkdir('./graphs/') #creates folder
 
 root=tk.Tk()   
+root.iconbitmap('hoops_icon.ico')      #sets the window icon
+root.title('Quidditch Analysis Alpha-Mapping')
 #add a menu bar
 graphs_menu=tk.Menu(root)
 root.config(menu=graphs_menu)
@@ -175,14 +177,14 @@ def add_attempt(method):
         #if theres a catch or pass interaction use that as the pass end 
         if (method=='catch' or method=='block' or method=='drop') and player.get!=prev_name and prev_event=='pass':
             d2=pd.DataFrame([{'id':idx.get()-1,'name':prev_name,'team':prev_team,'event':'pass end','coords':coords.get()}])
-            d2.set_index('id')
+            #d2.set_index('id')
             dataframe=dataframe.append(d2)
     except:
         pass
     d2=pd.DataFrame([{'id':idx.get(),'name':player.get(),'team':team.get(),'event':method,'coords':coords.get()}])
-    d2.set_index('id')
+    #d2.set_index('id')
     dataframe=dataframe.append(d2)
-    dataframe.set_index('id')
+    #dataframe.set_index('id',inplace=True)
     idx.set(idx.get()+1)
 
     
@@ -256,8 +258,9 @@ def remove():
         print(lstbox_events.curselection())
         #index = lstbox_events.get(0, "end").index(tk.ANCHOR)
         lstbox_events.delete(tk.ANCHOR)  
-        #dataframe.drop(index=index,inplace=True)
+        dataframe.set_index('id',inplace=True)
         dataframe.drop(index=vari[0],inplace=True)
+        dataframe.reset_index(inplace=True)
     #except:
         #raise Exception("Currently can't remove some of the events in time, working on it")
         print(dataframe)
@@ -619,19 +622,24 @@ draw_pitch=tk.Button(text='draw pitch',command=lambda: createPitch(pitch='half')
 
 save=tk.Button(text='Save',command=lambda:save_data())
 save.grid(rows=10,columns=5)
-def import_data(dataframe):
+def import_data():
     #opens file
-    data=filedialog.askopenfilename(initialdir='.\graphs',title='Import match data',filetypes=('CSV','*.csv'))
-    dataframe=dataframe.append(dataframe.read_csv(data))
+    global dataframe
+    data=filedialog.askopenfilename(initialdir='.\graphs',title='Import match data')
+    try:
+        dataframe=dataframe.append(dataframe.read_csv(data,index_col=0))
+    except:
+        dataframe=pd.read_csv(data,index_col=0)
     #adds each event to the list box 
     for i,row in dataframe.iterrows():
-        lstbox_events.insert('end',(i,row.event,row.team,row.name,row.coords))    
-    
+        lstbox_events.insert('end',(i,row.event,row.team,row['name'],row.coords))    
+    print(dataframe)
 #file menu
 file_menu=tk.Menu(graphs_menu,tearoff=0)
 graphs_menu.add_cascade(label='File',menu=file_menu)
-file_menu.add_command(label='Import Data',command=lambda: import_data(dataframe))
+file_menu.add_command(label='Import Data',command=import_data)
 file_menu.add_command(label='Exit',command=root.quit)
+
 root.mainloop()
 #
 #https://github.com/tuangauss/DataScienceProjects/blob/master/Python/football_visual.ipynb
