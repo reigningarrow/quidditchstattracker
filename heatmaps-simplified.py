@@ -626,6 +626,7 @@ def import_data():
     #opens file
     global dataframe
     data=filedialog.askopenfilename(initialdir='.\graphs',title='Import match data')
+    #if there is already data stored add to it otherwise create a new dataframe
     try:
         dataframe=dataframe.append(dataframe.read_csv(data,index_col=0))
     except:
@@ -634,6 +635,22 @@ def import_data():
     for i,row in dataframe.iterrows():
         lstbox_events.insert('end',(i,row.event,row.team,row['name'],row.coords))    
     print(dataframe)
+    #print(data)
+    #gets the tournament and match names
+    info=data.split('/')
+    tournament_name=info[-2]
+    game_name=info[-1].split('.')[0]
+
+    #sets the tournament and match names
+    selected_tournament.set(tournament_name)
+    selected_match.set(game_name)
+    
+    #allows all of the buttons to work
+    for c in range(rows*cols):
+        button[c].config(state='normal',relief='raised')
+    #makes the buttons for the listbox work
+    btn_remove.config(state='normal')
+    btn_reset.config(state='normal')
 #file menu
 file_menu=tk.Menu(graphs_menu,tearoff=0)
 graphs_menu.add_cascade(label='File',menu=file_menu)
