@@ -642,16 +642,16 @@ def save_data():
     
     #adds the match data to a csv file for the whole tournament
     #if  the files exists add to it, otherwise create the file
-    if os.path.isfile('./graphs/',selected_tournament.get(),'/totals.csv')==True:
-        df=pd.read_csv('./graphs/',selected_tournament.get(),'/totals.csv')
+    if os.path.isfile('./graphs/'+selected_tournament.get()+'/totals.csv')==True:
+        df=pd.read_csv('./graphs/'+selected_tournament.get()+'/totals.csv',index_col=0)
         df=df.append(dataframe)
-        df.to_csv('./graphs/',selected_tournament.get(),'/totals.csv')
+        df.to_csv('./graphs/'+selected_tournament.get()+'/totals.csv')
     else:
-        dataframe.to_csv('./graphs/',selected_tournament.get(),'/totals.csv')
+        dataframe.to_csv('./graphs/'+selected_tournament.get()+'/totals.csv')
     
     #adds the data to total csv file and saves it
     if os.path.isfile('./graphs/totals.csv')==True:
-        df=pd.read_csv('./graphs/totals.csv')
+        df=pd.read_csv('./graphs/totals.csv',index_col=0)
         df=df.append(dataframe)
         df.to_csv('./graphs/totals.csv')
     else:
