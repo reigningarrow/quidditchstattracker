@@ -676,7 +676,7 @@ save.config(state='disabled')
 def import_data():
     #opens file
     global dataframe
-    data=filedialog.askopenfilename(initialdir='.\graphs',title='Import match data')
+    data=filedialog.askopenfilename(initialdir='.\graphs',title='Import match data',filetypes =[('CSV', '*.csv')])
     #if there is already data stored add to it otherwise create a new dataframe
     try:
         dataframe=dataframe.append(dataframe.read_csv(data,index_col=0))
