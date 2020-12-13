@@ -168,10 +168,9 @@ playername=0
 
 
 def click(row, col,number):
-    #changes all button colours back to system colour 
-    #to make sure only one can be highlighted
-    for c in range(rows*cols):
-        button[c].config(bg="SystemButtonFace")
+    #changes the previously selected button back to the normal colour
+    #makes sure only one button can be highlighted
+    button[button_num.get()].config(bg="SystemButtonFace")    
     label.configure(text=(row, col))          
     coords.set(label.cget('text')) #sets the coordinates to a tuple
     button[number].config(bg='red') #make selected button red
