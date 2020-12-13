@@ -29,35 +29,32 @@ rows=15
 cols=30
 
 pitch_frame=tk.Frame(root,width=100,height=50,bg='black',bd=2)
-'''
-pitch_image=ImageTk.PhotoImage(Image.open('Hoops.png'))
-lbl_pitch_img = tk.Label(pitch_frame,image=pitch_image)
-#lbl_pitch_img.place(x=0, y=0, relwidth=1, relheight=1)        
-lbl_pitch_img.grid(row=0,column=0,rowspan=rows,columnspan=cols)
-'''
 
 #creates the part of screen for selection of match
 selection_frame=tk.Frame(root)
 #adds tournament selection button
 def select_tournament():
+    #clears all data every time you select a new tournament
     clear()
     #sets the tournament name
     selected_tournament.set(cb_tournament.get())
     tournament=cb_tournament.get()
+    #adds the list of game names/matchups to a combobox to choose a specific match
     game_list=os.listdir('./games/game_def/'+tournament+'/')
     #adds the list of games to the games combobox
     cb_match['values']=game_list
+    #enables the select match buttons
     cb_match['state']='readonly'
     btn_choose_match['state']='normal'
     
-selected_tournament=tk.StringVar()
-tournament_list= [f.name for f in os.scandir('./games/game_def/') if f.is_dir()]
-selected_match=tk.StringVar()
+
 
 def select_match():
     #function to select a specific match
+    #need to use the global thing everytime you change the value, i think...
     global df_match
     global playerlist
+    #reads the data from the csv file of all the players names and their team
     df_match=pd.read_csv('./games/game_def/'+selected_tournament.get()+'/'+cb_match.get())
     #print(df_match['Name'].tolist())
     playerlist=(df_match['Name'].to_list())
@@ -69,12 +66,17 @@ def select_match():
     lbl_team['state']='normal'
     #cb_player['state']='readonly'
     
-    
+    #gets the list of players from the data in the match and adds it 
+    #to the listbox
+
     for players in playerlist:
         lstbox_players.insert('end',(players))  
     
 
-
+selected_tournament=tk.StringVar()
+#at the start this gets all the available tournaments and will add them to the combobox
+tournament_list= [f.name for f in os.scandir('./games/game_def/') if f.is_dir()]
+selected_match=tk.StringVar()
 match=tk.StringVar()
 
 #makes so that only files with a specific extension are chosen
@@ -104,9 +106,10 @@ def player_team(event):
         else:
             team_l=team.get()
             lbl_team.configure(text=team_l)
-    
-        for c in range(rows*cols):
-            button[c].config(state='normal',relief='raised')
+        #makes the buttons raised to know they're working
+        if button[0]['state']!='normal':
+            for c in range(rows*cols):
+                button[c].config(state='normal',relief='raised')
     except:
         pass
 
@@ -160,9 +163,9 @@ button_num=tk.IntVar()
 button=[]   
 
 idx=tk.IntVar()
-#dataframe=pd.DataFrame()   
+  
 playername=0
-#team='team'
+
 
 def click(row, col,number):
     #changes all button colours back to system colour 
@@ -195,17 +198,21 @@ def add_attempt(method):
         prev_name=dataframe['name'].iloc[-1]
         prev_team=dataframe['team'].iloc[-1]
         prev_event=dataframe['event'].iloc[-1]
-        #if theres a catch or pass interaction use that as the pass end 
+        #if theres a catch or pass interaction use that as the pass end as well
+        #this is to draw the arrows, this could be simplified but i dont think it affects speed much
         if (method=='catch' or method=='block' or method=='drop') and player.get!=prev_name and prev_event=='pass':
+            #creates a dataframe for each new row then appends it to the dataframe
             d2=pd.DataFrame([{'id':idx.get()-1,'name':prev_name,'team':prev_team,'event':'pass end','coords':coords.get()}])
             #d2.set_index('id')
             dataframe=dataframe.append(d2)
     except:
         pass
+    #adds the new interaction to a dataframe then appends it to the main dataframe
     d2=pd.DataFrame([{'id':idx.get(),'name':player.get(),'team':team.get(),'event':method,'coords':coords.get()}])
     #d2.set_index('id')
     dataframe=dataframe.append(d2)
     #dataframe.set_index('id',inplace=True)
+    #updates the index number so rows dont get row values with multiple numbers
     idx.set(idx.get()+1)
 
     
@@ -251,6 +258,7 @@ def clear():
 def clear():
     #delete everything
     global dataframe
+    #basically reinitialises the dataframe
     dataframe=pd.DataFrame()
     #dataframe=dataframe.drop(dataframe.iloc[0:0],axis=1) #remove everything from dataframe
     lstbox_events.delete(0,'end') #removes everything from listbox
@@ -275,13 +283,18 @@ def clear():
 def remove():
     #deletes selected item from the listbox and drops it from the dataframe
     #try:
+        #gets the currently selected item in the listbox
         vari=lstbox_events.get(lstbox_events.curselection())
         print(vari)
         #print(lstbox_events.curselection())
         #index = lstbox_events.get(0, "end").index(tk.ANCHOR)
-        lstbox_events.delete(tk.ANCHOR)  
+        #deletes the item from the listbox
+        lstbox_events.delete(tk.ANCHOR)
+        #sets the index of the dataframe to the unique id number
+        #then removes the relevant row as vari[0] gets the id number
         dataframe.set_index('id',inplace=True)
         dataframe.drop(index=vari[0],inplace=True)
+        #resets the index to not be id cos it gives errors sometimes
         dataframe.reset_index(inplace=True)
     #except:
         #raise Exception("Currently can't remove some of the events in time, working on it")
@@ -297,6 +310,7 @@ for row in range(1,rows+1):
         button.append( tk.Button(pitch_frame, text='      ', 
                            command=lambda row=row,col=col,number=i:
                                click(row, col,number)))
+        #provides spacing to show pitch markings
         if col==15: #midline    
             button[i].grid(row=row, column=col, sticky="nsew",padx=(0,5))
             
@@ -357,7 +371,7 @@ lstbox_events=tk.Listbox(evt_frame,height=25,width=30)
 scrl_evt=tk.Scrollbar(evt_frame) #scroll box
 scrl_evt.configure(command=lstbox_events.yview)
 
-scrl_x_evt=tk.Scrollbar(evt_frame,orient=tk.HORIZONTAL) #scroll box
+scrl_x_evt=tk.Scrollbar(evt_frame,orient=tk.HORIZONTAL) # horizontal scroll box
 scrl_x_evt.configure(command=lstbox_events.xview)
 lstbox_events.configure(yscrollcommand=scrl_evt.set,xscrollcommand=scrl_x_evt.set)
 
@@ -394,6 +408,7 @@ btn_skr.config(state='disabled')
 def createPitch(color='black',pitch='full'): 
     # in meters
     # Code by @JPJ_dejong
+    #modified by @reigningarrow
     
     """
     creates a plot in which the 'length' is the length of the pitch (goal to goal).
@@ -409,7 +424,7 @@ def createPitch(color='black',pitch='full'):
         
         #fig.set_size_inches(7, 5)
         ax=fig.add_subplot(1,1,1)
-        ax.set_facecolor('#94B560')
+        #ax.set_facecolor('#94B560') #this doesnt work but doesnt need to
         #Pitch Outline & Centre Line
         plt.plot([0,0],[0,width], color=linecolor,linewidth=10)
         plt.plot([0,length],[width,width], color=linecolor,linewidth=10)
@@ -436,6 +451,7 @@ def createPitch(color='black',pitch='full'):
         plt.plot([length/2-16.5,length/2-16.5],[width/2-2.5-0.9,width/2-2.5+0.9],color=linecolor,linewidth=20)
         plt.plot([length/2-16.5,length/2-16.5],[width/2-0.9,width/2+0.9],color=linecolor,linewidth=20)
         plt.plot([length/2-16.5,length/2-16.5],[width/2+2.5-0.9,width/2+2.5+0.9],color=linecolor,linewidth=20)
+    #if you're using something that only needs to show half the pitch make a half pitch
     elif pitch=='half':
         #Create figure
         fig=plt.figure(figsize=(length/2,width))
@@ -471,8 +487,9 @@ def createPitch(color='black',pitch='full'):
     return fig,ax
 
 
-
+#saves the data
 def save_data():
+    #for potential future saving to a cloud server
     uname=os.getlogin()
     match=selected_match.get().split('.') #gets the name of the match
     match=match[0]
@@ -497,6 +514,7 @@ def save_data():
                     ['catch','drop'],['block'],['beater'],['sk catch']]
             
             for item in graphs:
+                #adds 4 values at the start to make sure the kde plot covers the whole pitch
                 x_kde=[-5,-5,65,65]
                 y_kde=[-5,40,-5,40]
                 #makes sure that we only have data from the events we want
@@ -523,12 +541,14 @@ def save_data():
                     
                     y=int(data[0])*33/15
                     x=int(data[-1])*60/30-0.5
-                    
+                    #if its a shot goal maps all shots to one side
                     if item==['shot','goal']:
                         #print('x coords of shots')
                         #print(x)
-                        if x>29:
-                            x-=(29+16.5)
+                        #if its in the right hand half of the pitch map it
+                        #to the left hand side
+                        if x>30:
+                            x-=(30+16.5)
                             if x<0:
                                 x=abs(x)
                             else:
@@ -541,12 +561,15 @@ def save_data():
                         y=abs(y-33)+1
                     else:
                         y=y-33+1
+                    #adds the data for the kde plot
                     x_kde.append(x)
                     y_kde.append(y)
                     if item==['pass','catch','pass end','drop','block']:
+                        #if its a pass start don't plot anything wait till the pass end
                          if d2['event']=='pass':
                              continue
                          else:
+                             #gets the location of the pass starting location
                              pass_start_loc=dataframe['coords'].iloc[i-1].split()
 
                              y_start=int(pass_start_loc[0])*33/15
@@ -565,6 +588,7 @@ def save_data():
                                  del x_kde[-1]
                                  del y_kde[-1]
                              try:
+                                 #sets the colours for each event
                                  evt=dataframe['event'].iloc[i+1]
                                  if evt=='catch':
                                      colour='black'
@@ -573,7 +597,7 @@ def save_data():
                                  elif evt=='drop':
                                      colour='orange'
                              except:
-                                 pass
+                                 raise Exception("Can't set the colours of the arrows")
                                  #draw the arrows       
                              plt.annotate("", xy = (x, y), xycoords = 'data',
                 xytext = (x_start, y_start), textcoords = 'data',
@@ -587,12 +611,13 @@ def save_data():
                             colour='orange'
                         #adds circles of size 1 and alpha needs to be changed
                         circle=plt.Circle((x,y),0.9,color=colour,alpha=0.4)
-                             
+                        #if its a team map add players names     
                         if kind=='team':
                             plt.annotate(d2['name'],(x,y),size=25)
                         
                         ax.add_patch(circle) #adds it to the graph
                 #fig.set_facecolor('green')
+                #adds the kde plot to the graph
                 sns.kdeplot(x_kde, y_kde, shade = "True", cmap='summer', n_levels = 100,alpha=0.75)
                 #if the length of the coords is greater than 0, then check if limits cos errors...
                 if len(x_kde)>6 and len(y_kde)>6:
@@ -605,11 +630,13 @@ def save_data():
                     else:
                         plt.xlim(0,60)
                     '''
+                    #if its a goal/shot graph make sure it only shows one part of the pitch
                     if item==['shot','goal']:
                         plt.xlim(0,31)
                 else:
+                    #otherwise set the pitch limits to the full pitch
+                    #basically doesn't show the edges of the kde graph as those 4 points are off the pitch
                     plt.xlim(0,60)
-                    pass
                 plt.ylim(0,33)
                 
 
