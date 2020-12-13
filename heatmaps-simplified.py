@@ -635,27 +635,30 @@ def save_data():
                 bar['value'] +=1/it_length
                 
     print('FINISHED!! :D')
-    #saves the match data to a csv file
-    if os.path.exists('./graphs/'+selected_tournament.get()+'/')==False:
-        os.makedirs('./graphs/'+selected_tournament.get()+'/')
-    dataframe.to_csv('./graphs/'+selected_tournament.get()+'/'+selected_match.get())
-    
-    #adds the match data to a csv file for the whole tournament
-    #if  the files exists add to it, otherwise create the file
-    if os.path.isfile('./graphs/'+selected_tournament.get()+'/totals.csv')==True:
-        df=pd.read_csv('./graphs/'+selected_tournament.get()+'/totals.csv',index_col=0)
-        df=df.append(dataframe)
-        df.to_csv('./graphs/'+selected_tournament.get()+'/totals.csv')
-    else:
-        dataframe.to_csv('./graphs/'+selected_tournament.get()+'/totals.csv')
-    
-    #adds the data to total csv file and saves it
-    if os.path.isfile('./graphs/totals.csv')==True:
-        df=pd.read_csv('./graphs/totals.csv',index_col=0)
-        df=df.append(dataframe)
-        df.to_csv('./graphs/totals.csv')
-    else:
-        dataframe.to_csv('./graphs/totals.csv')
+    #basically if its just a totals file dont save it again
+    if selected_match.get()!='totals.csv':
+        #saves the match data to a csv file
+        if os.path.exists('./graphs/'+selected_tournament.get()+'/')==False:
+            os.makedirs('./graphs/'+selected_tournament.get()+'/')
+        dataframe.to_csv('./graphs/'+selected_tournament.get()+'/'+selected_match.get())
+        
+        
+        #adds the match data to a csv file for the whole tournament
+        #if  the files exists add to it, otherwise create the file
+        if os.path.isfile('./graphs/'+selected_tournament.get()+'/totals.csv')==True:
+            df=pd.read_csv('./graphs/'+selected_tournament.get()+'/totals.csv',index_col=0)
+            df=df.append(dataframe)
+            df.to_csv('./graphs/'+selected_tournament.get()+'/totals.csv')
+        else:
+            dataframe.to_csv('./graphs/'+selected_tournament.get()+'/totals.csv')
+        
+        #adds the data to total csv file and saves it
+        if os.path.isfile('./graphs/totals.csv')==True:
+            df=pd.read_csv('./graphs/totals.csv',index_col=0)
+            df=df.append(dataframe)
+            df.to_csv('./graphs/totals.csv')
+        else:
+            dataframe.to_csv('./graphs/totals.csv')
     
         
     
@@ -681,17 +684,23 @@ def import_data():
         dataframe=pd.read_csv(data,index_col=0)
     #adds each event to the list box 
     for i,row in dataframe.iterrows():
-        lstbox_events.insert('end',(i,row.event,row.team,row['name'],row.coords))    
+        lstbox_events.insert('end',(row.id,row.event,row.team,row['name'],row.coords))    
     print(dataframe)
     #print(data)
     #gets the tournament and match names
     info=data.split('/')
     tournament_name=info[-2]
     game_name=info[-1].split('.')[0]
-
+    #if you're adding a totals file set the graphs to be saved in a totals folder
+    if game_name=='totals':
+        selected_tournament.set(tournament_name)
+    else:
+        selected_tournament.set(tournament_name)
+    if tournament_name=='graphs':
+        selected_tournament.set('totals')
     #sets the tournament and match names
-    selected_tournament.set(tournament_name)
-    selected_match.set(game_name)
+    
+    selected_match.set(game_name+'.csv')
     
     #allows all of the buttons to work
     for c in range(rows*cols):
@@ -699,6 +708,7 @@ def import_data():
     #makes the buttons for the listbox work
     btn_remove.config(state='normal')
     btn_reset.config(state='normal')
+    save.config(state='normal')
 #file menu
 file_menu=tk.Menu(graphs_menu,tearoff=0)
 graphs_menu.add_cascade(label='File',menu=file_menu)
