@@ -65,9 +65,13 @@ def select_match():
     player.set('')
     lbl_team.configure(text='Team')
     #gets the list of players from the data in the match and adds it to the combobox
-    cb_player['values']=playerlist
+    #cb_player['values']=playerlist
     lbl_team['state']='normal'
-    cb_player['state']='readonly'
+    #cb_player['state']='readonly'
+    
+    
+    for players in playerlist:
+        lstbox_players.insert('end',(players))  
     
 
 
@@ -81,21 +85,30 @@ matchlist=list_files1('./games/game_def/', '.csv')
 def player_team(event):
     #gets the currently selected players team from the combobox selection
     #this changes each time a new player is selected
-    
-    p_team=(df_match['Team'].to_list())
-    p_team_index=playerlist.index(cb_player.get())
-    team.set(p_team[p_team_index])
-    player.set(cb_player.get())
-    #enables the buttons 
-    if len(team.get())>14: #if team name is too long use the last word in their name
-        team_l=team.get().split(' ')
-        lbl_team.configure(text=team_l[-1])
-    else:
-        team_l=team.get()
-        lbl_team.configure(text=team_l)
+    #the try is in there because it throws an error if you 
+    #select a different listbox for some reason
 
-    for c in range(rows*cols):
-        button[c].config(state='normal',relief='raised')
+    try:
+        selected_player=lstbox_players.get(lstbox_players.curselection())
+        #selected_player=tk.ANCHOR()
+        p_team=(df_match['Team'].to_list())
+        #p_team_index=playerlist.index(cb_player.get())
+        p_team_index=playerlist.index(selected_player)
+        team.set(p_team[p_team_index])
+        #player.set(cb_player.get())
+        player.set(selected_player)
+        #enables the buttons 
+        if len(team.get())>14: #if team name is too long use the last word in their name
+            team_l=team.get().split(' ')
+            lbl_team.configure(text=team_l[-1])
+        else:
+            team_l=team.get()
+            lbl_team.configure(text=team_l)
+    
+        for c in range(rows*cols):
+            button[c].config(state='normal',relief='raised')
+    except:
+        pass
 
 cb_tournament=ttk.Combobox(selection_frame,value=tournament_list,state='readonly',width=30)
 btn_tournament=tk.Button(selection_frame,text='Select tournament',command=select_tournament)
@@ -117,9 +130,17 @@ btn_choose_match.grid(row=2,column=2,sticky='ew')
 cb_match.        grid(row=2,column=0,columnspan=3,sticky='w')
 
 btn_choose_match['state']='disabled'
-cb_player=ttk.Combobox(selection_frame,value='',state='readonly') 
-cb_player.bind('<<ComboboxSelected>>',player_team) #sets it so it registers a value when the combobox is changed
-   
+#cb_player=ttk.Combobox(selection_frame,value='',state='readonly') 
+#cb_player.bind('<<ComboboxSelected>>',player_team) #sets it so it registers a value when the combobox is changed
+
+lstbox_players=tk.Listbox(selection_frame,height=20,width=30)
+scrl_players=tk.Scrollbar(selection_frame) #scroll box
+scrl_players.configure(command=lstbox_players.yview)
+
+lstbox_players.bind("<<ListboxSelect>>", player_team)
+lstbox_players.grid(row=4,column=0,rowspan=21,sticky='nsew')
+scrl_players.grid(row=4,column=1,sticky='ns',rowspan=20)
+
 player=tk.StringVar()
 team  =tk.StringVar()
 team.set('Team')
@@ -128,9 +149,9 @@ lbl_select_player=tk.Label(selection_frame,text='Select player to analyse')
 lbl_team    =tk.Label(selection_frame,text=team.get(),width=12,justify='left')
 
 lbl_select_player.grid(row=3,column=0,pady=(10,2),sticky='w')
-cb_player.grid(row=4,column=0,sticky='w',padx=(0,20))
+#cb_player.grid(row=4,column=0,sticky='w',padx=(0,20))
 lbl_team.grid(row=4,column=2,sticky='w')
-cb_player['state']='disabled'
+#cb_player['state']='disabled'
 lbl_team ['state']='disabled'
 
 selection_frame.grid(row=0,column=1,rowspan=3,sticky='nsew')
@@ -205,6 +226,7 @@ def add_attempt(method):
     
     btn_remove.config(state='normal')
     btn_reset.config(state='normal')
+    save.config(state='normal')
     print(dataframe) 
     #adds the item to listbox
     lstbox_events.insert('end',((idx.get()-1)
@@ -255,7 +277,7 @@ def remove():
     #try:
         vari=lstbox_events.get(lstbox_events.curselection())
         print(vari)
-        print(lstbox_events.curselection())
+        #print(lstbox_events.curselection())
         #index = lstbox_events.get(0, "end").index(tk.ANCHOR)
         lstbox_events.delete(tk.ANCHOR)  
         dataframe.set_index('id',inplace=True)
@@ -295,7 +317,7 @@ label = tk.Label(root, text="")
 
 
 #label.grid(row=10, column=0, columnspan=10, sticky="new")
-pitch_frame.grid(row=1,column=3,rowspan=10,sticky='nsew',pady=(20),padx=(2,0))
+pitch_frame.grid(row=0,column=3,rowspan=10,sticky='new',pady=(20),padx=(2,0))
 
 #adds frame for all buttons and creates and places buttons
 button_grid=tk.Frame(root)
@@ -324,7 +346,7 @@ btn_drop.grid(row=1,column=8,columnspan=4,sticky='ew')
 btn_btr.grid(row=3,column=0,columnspan=6,sticky='ew')
 btn_skr.grid(row=3,column=6,columnspan=6,sticky='ew')
 
-button_grid.grid(row=11,column=3,pady=(10,10))
+button_grid.grid(row=3,column=3,pady=(10,10),sticky='n')
 
 #panel.grid(row=0,column=0,rowspan=rows,columnspan=cols,sticky='nsew')
 
@@ -350,7 +372,7 @@ btn_remove.grid(row=22,column=30,columnspan=3,pady=(0,10))
 btn_reset.grid(row=23,column=30,columnspan=3)
 
 
-evt_frame.grid(row=1,column=4,rowspan=12,padx=(10,0))
+evt_frame.grid(row=0,column=4,rowspan=12,padx=(10,0),sticky='n')
 
 #at the start disable everything
 btn_remove.config(state='disabled')
@@ -482,27 +504,38 @@ def save_data():
                 #if theres no events of the category skip it
                 if len(df.index)==0:
                     continue
-
-                (fig,ax)=createPitch() 
+                #if its a shot map only show half of the pitch
+                if item==['shot','goal']:
+                    (fig,ax)=createPitch(pitch='half') 
+                else:
+                    (fig,ax)=createPitch() 
                  #need to do this for each team, each player, each type of interaction
                  #for shots if a shot goes in it should be a different colour
                 for i,data in df.iterrows():
                     d2=data
                     data=data['coords'].split() #splits the coordinates into x and y
-                    '''
-                     if item==['shot','goal']:
-                             if (int(data[-1])-(60/2))<0:
-                                 data[-1]=abs(int(data[-1])-(60/2)+1)
-                             else:
-                                 data[-1]=int(data[-1])-(60/2)+1
-                    '''
+                    
+                    
+                    
                     #sets the x and y values so they fit in the pitch image
-                    print('x',data[0],type(data[0]))
-                    print('y',data[-1],type(data[-1]))
+                    print('x',data[-1],type(data[0]))
+                    print('y',data[0],type(data[-1]))
                     
                     y=int(data[0])*33/15
                     x=int(data[-1])*60/30-0.5
                     
+                    if item==['shot','goal']:
+                        #print('x coords of shots')
+                        #print(x)
+                        if x>29:
+                            x-=(29+16.5)
+                            if x<0:
+                                x=abs(x)
+                            else:
+                                x=-1*x
+                            x=x+13.5
+
+                        
                     #makes the data look the same way you record it, ie not flipped
                     if (y-33)<0:
                         y=abs(y-33)+1
@@ -560,9 +593,10 @@ def save_data():
                         
                         ax.add_patch(circle) #adds it to the graph
                 #fig.set_facecolor('green')
-                sns.kdeplot(x_kde, y_kde, shade = "True", cmap='summer', n_levels = 100,alpha=0.8)
+                sns.kdeplot(x_kde, y_kde, shade = "True", cmap='summer', n_levels = 100,alpha=0.75)
                 #if the length of the coords is greater than 0, then check if limits cos errors...
                 if len(x_kde)>6 and len(y_kde)>6:
+                    '''
                     #if its a shot goal graph then only do 1 half of the map
                     if max(x_kde[5:])<30 and item==['shot','goal']:
                         plt.xlim(0,31)
@@ -570,8 +604,12 @@ def save_data():
                         plt.xlim(29,60)
                     else:
                         plt.xlim(0,60)
+                    '''
+                    if item==['shot','goal']:
+                        plt.xlim(0,31)
                 else:
                     plt.xlim(0,60)
+                    pass
                 plt.ylim(0,33)
                 
 
@@ -602,8 +640,17 @@ def save_data():
         os.makedirs('./graphs/'+selected_tournament.get()+'/')
     dataframe.to_csv('./graphs/'+selected_tournament.get()+'/'+selected_match.get())
     
+    #adds the match data to a csv file for the whole tournament
+    #if  the files exists add to it, otherwise create the file
+    if os.path.isfile('./graphs/',selected_tournament.get(),'/totals.csv')==True:
+        df=pd.read_csv('./graphs/',selected_tournament.get(),'/totals.csv')
+        df=df.append(dataframe)
+        df.to_csv('./graphs/',selected_tournament.get(),'/totals.csv')
+    else:
+        dataframe.to_csv('./graphs/',selected_tournament.get(),'/totals.csv')
+    
     #adds the data to total csv file and saves it
-    if os.file.exists('./graphs/totals.csv')==True:
+    if os.path.isfile('./graphs/totals.csv')==True:
         df=pd.read_csv('./graphs/totals.csv')
         df=df.append(dataframe)
         df.to_csv('./graphs/totals.csv')
@@ -620,8 +667,9 @@ def save_data():
 draw_pitch=tk.Button(text='draw pitch',command=lambda: createPitch(pitch='half'))
 #draw_pitch.grid(row=100,column=100)
 
-save=tk.Button(text='Save',command=lambda:save_data())
-save.grid(rows=10,columns=5)
+save=tk.Button(text='Save',width=10,command=lambda:save_data())
+save.grid(rows=10,columns=30)
+save.config(state='disabled')
 def import_data():
     #opens file
     global dataframe
