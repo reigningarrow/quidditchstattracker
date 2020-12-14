@@ -46,6 +46,7 @@ def select_tournament():
     #enables the select match buttons
     cb_match['state']='readonly'
     btn_choose_match['state']='normal'
+    lstbox_players.delete(0,'end') #removes everything from listbox
     
 
 
@@ -68,7 +69,7 @@ def select_match():
     
     #gets the list of players from the data in the match and adds it 
     #to the listbox
-
+    lstbox_players.delete(0,'end') #removes everything from listbox
     for players in playerlist:
         lstbox_players.insert('end',(players))  
     
