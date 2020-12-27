@@ -5,7 +5,8 @@ Created on Wed Sep 30 22:50:53 2020
 @author: Sam
 This is a messy code to make a get data to make a heatmap of events for a 
 team in a quidditch match
-
+TODO- Fix pass arrows- have to rework pass end system
+TODO- Map all events to be attacking towards the right
 """
 import tkinter as tk
 from tkinter import filedialog
@@ -14,7 +15,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import os
-
+import numpy as np
 #makes sure folder exists
 if os.path.exists('./graphs/')==False:
     os.mkdir('./graphs/') #creates folder
@@ -66,7 +67,13 @@ def select_match():
     #cb_player['values']=playerlist
     lbl_team['state']='normal'
     #cb_player['state']='readonly'
-    
+    #gets the teams taking part and adds them to the combobox
+    teams=selected_match.get().split('_')[0:3]
+    teams.remove('vs') #removes the vs from the list of values
+    cb_side['values']=teams
+    #enables the combobox
+    btn_side['state']='normal'
+    cb_side['state']='readonly'
     #gets the list of players from the data in the match and adds it 
     #to the listbox
     lstbox_players.delete(0,'end') #removes everything from listbox
@@ -108,7 +115,7 @@ def player_team(event):
             team_l=team.get()
             lbl_team.configure(text=team_l)
         #makes the buttons raised to know they're working
-        if button[0]['state']!='normal':
+        if button[0]['state']!='normal' and cb_side.get()!='':
             for c in range(rows*cols):
                 button[c].config(state='normal',relief='raised')
     except:
@@ -153,9 +160,7 @@ lbl_select_player=tk.Label(selection_frame,text='Select player to analyse')
 lbl_team    =tk.Label(selection_frame,text=team.get(),width=12,justify='left')
 
 lbl_select_player.grid(row=3,column=0,pady=(10,2),sticky='w')
-#cb_player.grid(row=4,column=0,sticky='w',padx=(0,20))
 lbl_team.grid(row=4,column=2,sticky='w')
-#cb_player['state']='disabled'
 lbl_team ['state']='disabled'
 
 selection_frame.grid(row=0,column=1,rowspan=3,sticky='nsew')
@@ -172,7 +177,7 @@ def click(row, col,number):
     #changes the previously selected button back to the normal colour
     #makes sure only one button can be highlighted
     button[button_num.get()].config(bg="SystemButtonFace")    
-    label.configure(text=(row, col))          
+    label.configure(text=(col, row))          
     coords.set(label.cget('text')) #sets the coordinates to a tuple
     button[number].config(bg='red') #make selected button red
     button_num.set(number)
@@ -230,10 +235,11 @@ def add_attempt(method):
     
     btn_btr.config(state='disabled')
     btn_skr.config(state='disabled')
+    if lstbox_events.size()>0:
+        btn_remove.config(state='normal')
+        btn_reset.config(state='normal')
+        save.config(state='normal')
     
-    btn_remove.config(state='normal')
-    btn_reset.config(state='normal')
-    save.config(state='normal')
     print(dataframe) 
     #adds the item to listbox
     lstbox_events.insert('end',((idx.get()-1)
@@ -299,6 +305,14 @@ def remove():
     #except:
         #raise Exception("Currently can't remove some of the events in time, working on it")
         print(dataframe)
+        if lstbox_events.size()>0:
+            btn_remove.config(state='normal')
+            btn_reset.config(state='normal')
+            save.config(state='normal')
+        else:
+            btn_remove.config(state='disabled')
+            btn_reset.config(state='disabled')
+            save.config(state='disabled')
 
 
 #Initial setup    
@@ -329,7 +343,19 @@ for c in range(rows*cols):
         button[c].config(state='disabled',relief='groove')
 label = tk.Label(root, text="")
 
+def get_side():
+    cb_side['state']='disabled'
+    btn_side['state']='disabled'
+    
 
+btn_side=tk.Button(text='Team playing this side',command=get_side)
+cb_side=ttk.Combobox()
+
+btn_side.grid(row=2,column=3,sticky='w',pady=(415,0),padx=(150,0),columnspan=5)
+cb_side.grid (row=2,column=3,sticky='w',pady=(415,0))
+
+btn_side['state']='disabled'
+cb_side['state']='disabled'
 #label.grid(row=10, column=0, columnspan=10, sticky="new")
 pitch_frame.grid(row=0,column=3,rowspan=10,sticky='new',pady=(20),padx=(2,0))
 
@@ -458,24 +484,27 @@ def createPitch(color='black',pitch='full'):
 
         ax=fig.add_subplot(1,1,1)
         ax.set_facecolor('#94B560')
-        #Pitch Outline & Centre Line
-        plt.plot([0,0],[0,width], color=linecolor)
-        plt.plot([0,length/2],[width,width], color=linecolor)
 
-        plt.plot([length/2,0],[0,0], color=linecolor)
-        plt.plot([length/2,length/2],[0,width], color=linecolor)
+
+        #plt.plot([0,0],[0,width], color=linecolor,linewidth=10)
+        plt.plot([length/2,length],[width,width], color=linecolor,linewidth=10)
+        plt.plot([length,length],[width,0], color=linecolor,linewidth=10)
+        plt.plot([length/2,length],[0,0], color=linecolor,linewidth=10)
+        #halfway line
+        plt.plot([length/2,length/2],[0,width], color=linecolor,linewidth=10)
         
         #Edge of keeper zones
-        plt.plot([length/2-11,length/2-11],[0,width],color=linecolor)
-
-        #Goal lines
-        plt.plot([length/2-16.5,length/2-16.5],[0,width],color=linecolor)
+        plt.plot([length/2+11,length/2+11],[0,width],color=linecolor)
         
-        #Left Hoops
-        plt.plot([length/2-16.5,length/2-16.5],[width/2-2.5-0.9,width/2-2.5+0.9],color=linecolor,linewidth=20)
-        plt.plot([length/2-16.5,length/2-16.5],[width/2-0.9,width/2+0.9],color=linecolor,linewidth=20)
-        plt.plot([length/2-16.5,length/2-16.5],[width/2+2.5-0.9,width/2+2.5+0.9],color=linecolor,linewidth=20)
+        
+        #Goal lines
+        plt.plot([length/2+16.5,length/2+16.5],[0,width],color=linecolor)
 
+        #Right Hoops
+        plt.plot([length/2+16.5,length/2+16.5],[width/2-2.5-0.9,width/2-2.5+0.9],color=linecolor,linewidth=20)
+        plt.plot([length/2+16.5,length/2+16.5],[width/2-0.9,width/2+0.9],color=linecolor,linewidth=20)
+        plt.plot([length/2+16.5,length/2+16.5],[width/2+2.5-0.9,width/2+2.5+0.9],color=linecolor,linewidth=20)
+        
     else:
         #give error if the wrong argument is inputted it shouldn't but just incase
         raise Exception('Only acceptable keywords are "half" and "full"')
@@ -501,12 +530,17 @@ def save_data():
     it_length=len(dataframe)*2*6
     #goes through each unique value in the team then name columns
     #this means it plots graphs per team and then per person
+    try:
+        dataframe.reset_index(inplace=True)
+    except:
+        print("Can't reset index")
     for kind in ['team','name']:
-        
+        print('\n\n\n\n\n\n')
         for team in dataframe[kind].unique():
             #makes sure there is only data that we want in the dataframe
             #dataframe2=dataframe[dataframe.kind.isin(team)].copy()
             dataframe2=dataframe[dataframe[kind]==team]
+            print(team,'\n',dataframe2,'\n\n')
 
             #choose the types of graphs to be looked at individually
             #so shots and goals are grouped
@@ -515,13 +549,18 @@ def save_data():
             
             for item in graphs:
                 #adds 4 values at the start to make sure the kde plot covers the whole pitch
-                x_kde=[-5,-5,65,65]
-                y_kde=[-5,40,-5,40]
+                x_kde=[-5-100,-5-100,65+100,65+100]
+                y_kde=[-5-100,40+100,-5-100,40+100]
                 #makes sure that we only have data from the events we want
                 df=dataframe2[dataframe2.event.isin(item)].copy()
+                
                 #if theres no events of the category skip it
                 if len(df.index)==0:
                     continue
+                #if its a shot and pass map but theres no passes dont do anything
+                elif item==['pass','catch','pass end','drop','block'] and (df['event'] == 'pass').sum()==0:
+                    continue
+                print(item,'\n',df,'\n\n')
                 #if its a shot map only show half of the pitch
                 if item==['shot','goal']:
                     (fig,ax)=createPitch(pitch='half') 
@@ -529,6 +568,7 @@ def save_data():
                     (fig,ax)=createPitch() 
                  #need to do this for each team, each player, each type of interaction
                  #for shots if a shot goes in it should be a different colour
+
                 for i,data in df.iterrows():
                     d2=data
                     data=data['coords'].split() #splits the coordinates into x and y
@@ -536,31 +576,31 @@ def save_data():
                     
                     
                     #sets the x and y values so they fit in the pitch image
-                    print('x',data[-1],type(data[0]))
-                    print('y',data[0],type(data[-1]))
+                    #print('x',data[-1],type(data[0]))
+                    #print('y',data[0],type(data[-1]))
                     
-                    y=int(data[0])*33/15
-                    x=int(data[-1])*60/30-0.5
+                    y=int(data[-1])*33/15
+                    x=int(data[0])*60/30-0.5
                     #if its a shot goal maps all shots to one side
                     if item==['shot','goal']:
                         #print('x coords of shots')
                         #print(x)
                         #if its in the right hand half of the pitch map it
                         #to the left hand side
-                        if x>30:
-                            x-=(30+16.5)
+                        if x<30:
+                            x-=(30-16.5)
                             if x<0:
                                 x=abs(x)
                             else:
                                 x=-1*x
-                            x=x+13.5
+                            x=x+30+17.5
 
-                        
-                    #makes the data look the same way you record it, ie not flipped
-                    if (y-33)<0:
-                        y=abs(y-33)+1
-                    else:
-                        y=y-33+1
+                    if selected_match.get()!='totals.csv':    
+                        #makes the data look the same way you record it, ie not flipped
+                        if (y-33)<0:
+                            y=abs(y-33)+1
+                        else:
+                            y=y-33+1
                     #adds the data for the kde plot
                     x_kde.append(x)
                     y_kde.append(y)
@@ -569,19 +609,22 @@ def save_data():
                          if d2['event']=='pass':
                              continue
                          else:
+                             #print('event',d2)
                              #gets the location of the pass starting location
                              pass_start_loc=dataframe['coords'].iloc[i-1].split()
-
-                             y_start=int(pass_start_loc[0])*33/15
-                             x_start=int(pass_start_loc[-1])*60/30-0.5
+                             #print('pass start loc-',dataframe.iloc[i-1])
+                             y_start=int(pass_start_loc[-1])*33/15
+                             x_start=int(pass_start_loc[0])*60/30-0.5
                          
-                             #makes the data look the same way you record it, ie not flipped
-                             if (y_start-33)<0:
-                                 y_start=abs(y_start-33)+1
-                             else:
-                                 y_start=y_start-33+1
+                             if selected_match.get()!='totals.csv':
+                                 #makes the data look the same way you record it, ie not flipped
+                                 if (y_start-33)<0:
+                                     y_start=abs(y_start-33)+1
+                                 else:
+                                     y_start=y_start-33+1
                                  
                          colour='gray'
+                         #print('event is-',d2['event'])
                          if d2['event']=='pass end':
                              #as the player isnt at the pass end remove that entry in kde coords
                              if kind!='team':
@@ -590,6 +633,7 @@ def save_data():
                              try:
                                  #sets the colours for each event
                                  evt=dataframe['event'].iloc[i+1]
+                                 print('event is-',evt)
                                  if evt=='catch':
                                      colour='black'
                                  elif evt=='block':
@@ -598,7 +642,8 @@ def save_data():
                                      colour='orange'
                              except:
                                  raise Exception("Can't set the colours of the arrows")
-                                 #draw the arrows       
+                                 #draw the arrows 
+                             print('drawing arrow',colour)    
                              plt.annotate("", xy = (x, y), xycoords = 'data',
                 xytext = (x_start, y_start), textcoords = 'data',
                 arrowprops=dict(width=5,headwidth=40,headlength=50,connectionstyle="arc3", color = colour))
@@ -620,24 +665,47 @@ def save_data():
                 #adds the kde plot to the graph
                 sns.kdeplot(x_kde, y_kde, shade = "True", cmap='summer', n_levels = 100,alpha=0.75)
                 #if the length of the coords is greater than 0, then check if limits cos errors...
-                if len(x_kde)>6 and len(y_kde)>6:
-                    '''
-                    #if its a shot goal graph then only do 1 half of the map
-                    if max(x_kde[5:])<30 and item==['shot','goal']:
-                        plt.xlim(0,31)
-                    elif min(x_kde[5:])>30 and item==['shot','goal']:
-                        plt.xlim(29,60)
-                    else:
-                        plt.xlim(0,60)
-                    '''
-                    #if its a goal/shot graph make sure it only shows one part of the pitch
-                    if item==['shot','goal']:
-                        plt.xlim(0,31)
+
+                #if its a goal/shot graph make sure it only shows one part of the pitch
+                #Also adds arrow showing the direction of attack
+                if item==['shot','goal'] and len(x_kde)>6 and len(y_kde)>6:
+                        plt.xlim(29.5,60.2)
+                        
+                        #adds name and player/team name
+                        plt.annotate((str(item)+' '+team),(31,32),size=40)
+                        
+                        plt.annotate('Direction of attack',(31,1.5),size=50,alpha=0.8)
+                        plt.annotate("", xy = (40.5, 1), xycoords = 'data',
+                xytext = (31, 1), textcoords = 'data',alpha=0.8,
+                arrowprops=dict(width=5,headwidth=40,headlength=50,connectionstyle="arc3", color = 'black'))
                 else:
                     #otherwise set the pitch limits to the full pitch
                     #basically doesn't show the edges of the kde graph as those 4 points are off the pitch
                     plt.xlim(0,60)
-                plt.ylim(0,33)
+                    plt.ylim(0,33)
+                    #adds graph type and player/team name
+                    plt.annotate((str(item)+' '+team),(1,32),size=40)
+                    #basically if this isn't totals (where every team attacks towards the right)
+                    #and the team is attacking from the right put their direction of attack pointing towards the left
+                    #otherwise put the arrow pointing to the right
+
+                    if selected_match.get()!='totals.csv' and dataframe2['team'].iloc[0]!=cb_side.get() : 
+                        plt.annotate('Direction of attack',(51,1.5),size=50,alpha=0.8)
+                        plt.annotate("", xy = (50, 1), xycoords = 'data',
+                xytext = (59, 1), textcoords = 'data',alpha=0.8,
+                arrowprops=dict(width=5,headwidth=40,headlength=50,connectionstyle="arc3", color = 'black'))
+
+                    
+                    else:
+                    #adds in the direction of attack for the teams
+                        plt.annotate('Direction of attack',(1,1.5),size=50,alpha=0.8)
+                        plt.annotate("", xy = (10.5, 1), xycoords = 'data',
+                    xytext = (1, 1), textcoords = 'data',alpha=0.8,
+                    arrowprops=dict(width=5,headwidth=40,headlength=50,connectionstyle="arc3", color = 'black'))
+                    
+               
+                
+                
                 
 
                 #saves the data and graphs       
@@ -664,6 +732,27 @@ def save_data():
     print('FINISHED!! :D')
     #basically if its just a totals file dont save it again
     if selected_match.get()!='totals.csv':
+        #change the coordinates system to make them all attack from the same side and in the crrect orientation
+        def trans_coords(data):
+            #print('info-',data)
+            #function to convert coordinates so everyone attacks the same direction 
+            #and that it the y=0 value is at the bottom of the screen
+            coords=data['coords'].split(' ')
+            
+            
+            x_coords=int(coords[-1])
+            y_coords=int(coords[0])
+            
+            y_coords=abs(y_coords-16) #transforms the y coordinates so the 0 value is at the bottom of the graph properly
+            
+            #if the team isnt attacking from the left change it to do so        
+            if data['team']!=cb_side.get():
+                x_coords=abs(x_coords-31)
+            coords=(x_coords,y_coords)
+            return coords
+
+        dataframe['coords']=dataframe.apply(trans_coords,axis=1)
+        print(dataframe)
         #saves the match data to a csv file
         if os.path.exists('./graphs/'+selected_tournament.get()+'/')==False:
             os.makedirs('./graphs/'+selected_tournament.get()+'/')
