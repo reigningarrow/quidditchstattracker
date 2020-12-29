@@ -74,6 +74,7 @@ def select_match():
     #enables the combobox
     btn_side['state']='normal'
     cb_side['state']='readonly'
+    cb_side.set('')
     #gets the list of players from the data in the match and adds it 
     #to the listbox
     lstbox_players.delete(0,'end') #removes everything from listbox
@@ -812,6 +813,14 @@ def import_data():
         selected_tournament.set(tournament_name)
     else:
         selected_tournament.set(tournament_name)
+        cb_side.set('')
+        #gets the teams taking part and adds them to the combobox
+        teams=selected_match.get().split('_')[0:3]
+        teams.remove('vs') #removes the vs from the list of values
+        cb_side['values']=teams
+        cb_side['state']='readonly'
+        btn_side['state']='normal'
+        
     if tournament_name=='graphs':
         selected_tournament.set('totals')
     #sets the tournament and match names
@@ -825,6 +834,7 @@ def import_data():
     btn_remove.config(state='normal')
     btn_reset.config(state='normal')
     save.config(state='normal')
+    
 #file menu
 file_menu=tk.Menu(graphs_menu,tearoff=0)
 graphs_menu.add_cascade(label='File',menu=file_menu)
