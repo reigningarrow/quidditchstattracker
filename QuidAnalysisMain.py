@@ -11,7 +11,8 @@ Program for recording quidditch stats using tkinter and pandas
 #TODO add new window to view stats
 #Potential TODO change save files to add to new tab instead of a new file every time
 
-
+#TODO add offence/defence button for goals allowed on defence/completed offence
+#TODO add team goal for chasers
 
 import tkinter as tk
 import pandas as pd
@@ -24,7 +25,7 @@ from tkinter import filedialog
 
 root=tk.Tk()
 #sets root window basic info
-root.iconbitmap('hoops_icon.ico')      #sets the window icon
+#root.iconbitmap('hoops_icon.ico')      #sets the window icon
 root.title('Quidditch Analysis Alpha')  #sets window title       
 root.geometry('470x690')  
     
@@ -155,6 +156,9 @@ def select_player():
         btn_goal_allowed['state']='disabled'
         btn_save_results['state']='normal'
         btn_on_pitch['state']='normal'
+        
+        btn_offence['state']='disabled'
+        btn_defence['state']='disabled'
 
     except:
         messagebox.showerror('Error Occured','An error has occured when trying to select a player')
@@ -225,6 +229,9 @@ def pitch_time(startstop):
         btn_reset['state']='disabled'
         btn_save_results['state']='disabled'
         
+        btn_offence['state']='normal'
+        btn_defence['state']='normal'
+        
         for child in cardframe.winfo_children():
             child.configure(state='disable')
         btn_goal_allowed['state']='normal'
@@ -256,7 +263,7 @@ def pitch_time(startstop):
                 btn_bt_bubble_created.grid_forget()
                 btn_bt_bubble_lost.grid_forget()
         elif pos.get()=='Seeker':
-
+            
             for child in seekerframe.winfo_children():
                 child.configure(state='normal')
             btn_sk_catch['state']='disabled'
@@ -281,6 +288,10 @@ def pitch_time(startstop):
         for child in cardframe.winfo_children():
             child.configure(state='normal')
         btn_goal_allowed['state']='disabled'
+        
+        btn_offence['state']='disabled'
+        btn_defence['state']='disabled'
+        
         if pos.get()=='Keeper/Chaser' or pos.get()=='Chaser':
             for child in chaserframe.winfo_children():
                 child.configure(state='disabled')
@@ -309,28 +320,41 @@ def pitch_time(startstop):
             for child in seekerframe.winfo_children():                
                 child.configure(state='disabled')
             btn_sk_catch['state']='normal'
-
-
+state={'offence':0,'defence':0}
+def game_state(attempt):
+    state[attempt]+=1
+    #disables one the button that was just clicked to stop any accidental double clicking
+    if attempt=='offence':
+        btn_offence['state']='disabled'
+        btn_defence['state']='normal'
+        
+    elif attempt=='defence':
+        btn_offence['state']='normal'
+        btn_defence['state']='disabled'
 
 infoframe.grid(row=2,column=0,columnspan=3)
 #on pitch off pitch
 btn_on_pitch =tk.Button(root,text='On pitch/Brooms up',width=28,command=lambda: pitch_time('start'))
 btn_off_pitch=tk.Button(root,text='Off pitch/Brooms down',width=28,command=lambda: pitch_time('stop'))
+btn_offence=tk.Button(root,text='Offence',width=14,command=lambda: game_state('offence'))
+btn_defence=tk.Button(root,text='Defence',width=14,command=lambda: game_state('defence'))
 #makes sure you can't press anything when no player is selected
 btn_off_pitch['state']='disabled'
 btn_on_pitch['state'] ='disabled'
+btn_offence['state']='disabled'
+btn_defence['state']='disabled'
 
-
-btn_on_pitch.grid(row=5,column=0,pady=(10,0))
-btn_off_pitch.grid(row=5,column=1,pady=(10,0))
-
+btn_on_pitch.grid(row=5,column=0,pady=(10,0),sticky='n')
+btn_off_pitch.grid(row=5,column=1,pady=(10,0),sticky='n')
+btn_offence.grid(row=5,column=0,sticky='s',pady=(40,0))
+btn_defence.grid(row=5,column=1,sticky='s',pady=(40,0))
 chaserframe=tk.Frame(root,borderwidth=1)
 
 #creates a dictionary of values of info to be gathered
 chaser_data={'drive goal':0,'drive attempt':0,'completed drive percent':0,'shot percent':0,'shot goal':0,'shot target':0,'shot miss':0,
              'shot attempt':0,'assist':0,'short pass percent':0,'short pass complete':0,'short pass miss':0,'short pass':0,
              'long pass percent':0,'long pass complete':0,'long pass miss':0,'long pass':0,'catch percent':0,'catch-':0,'drop catch':0,'targeted':0,
-             'broken tackle':0,'block':0,
+             'broken tackle':0,'block':0,'team goal_c':0,
              'intercept':0,'completed tackle':0,'partial tackle':0,'turnover forced':0}
 #dictionary of extra stuff that didnt need buttons
 chaser_extra={'shot goal':'shot attempt','shot target':'shot attempt',
@@ -352,7 +376,8 @@ btn_ch_drive_attempt=tk.Button(chaserframe,text='Drive attempt',width=int(button
 btn_ch_shot_goal    =tk.Button(chaserframe,text='Shot goal',width=int(button_width/3+1),command=lambda: add_value('shot goal'))
 btn_ch_shot_tgt     =tk.Button(chaserframe,text='Shot on target',width=int(button_width/3+1),command=lambda:add_value('shot target'))
 btn_ch_shot_miss    =tk.Button(chaserframe,text='Shot miss',width=int(button_width/3+1),command=lambda:add_value('shot miss'))
-btn_ch_assist       =tk.Button(chaserframe,text='Assist',width=button_width+6,command=lambda:add_value('assist'))
+btn_ch_assist       =tk.Button(chaserframe,text='Assist',width=int(button_width/2+2),command=lambda:add_value('assist'))
+btn_ch_teamgoal     =tk.Button(chaserframe,text='Team Goal',width=int(button_width/2+2),command=lambda:add_value('team goal'))
 btn_ch_s_pass_cpt   =tk.Button(chaserframe,text= 'Short pass completed',width=int(button_width/2+2),command=lambda:add_value('short pass complete'))
 btn_ch_s_pass_miss  =tk.Button(chaserframe,text='Short pass missed',width=int(button_width/2+2),command=lambda:add_value('short pass miss'))
 btn_ch_l_pass_cpt   =tk.Button(chaserframe,text='Long pass complete',width=int(button_width/2+2),command=lambda:add_value('long pass complete'))
@@ -374,7 +399,8 @@ btn_ch_drive_attempt.grid(row=1,column=6,columnspan=6)
 btn_ch_shot_goal.grid(row=2,column=0,columnspan=4)
 btn_ch_shot_miss.grid(row=2,column=4,columnspan=4)
 btn_ch_shot_tgt.grid(row=2,column=8,columnspan=4)
-btn_ch_assist.grid(row=3,column=0,columnspan=12)
+btn_ch_assist.grid(row=3,column=0,columnspan=6)
+btn_ch_teamgoal.grid(row=3,column=6,columnspan=6)
 btn_ch_s_pass_cpt.grid(row=4,column=0,columnspan=6)
 btn_ch_s_pass_miss.grid(row=4,column=6,columnspan=6)
 btn_ch_l_pass_cpt.grid(row=5,column=0,columnspan=6)
@@ -478,6 +504,7 @@ def sk_add_value(name):
 def timers(timer):
     #function for allowing the measure of durations
     if timer=='attack':
+        state['offence']+=1
         seeker_data['time attacking']=seeker_data['time attacking']-time.time()  
         btn_sk_atk_stp['state']='normal'        
         btn_sk_atk['state']='disabled'
@@ -494,6 +521,7 @@ def timers(timer):
 
         seeker_atk.set(0)
     if timer=='def':
+        state['defence']+=1
         seeker_data['time defending']=seeker_data['time defending']-time.time()
         btn_sk_def_stp['state']='normal'
         btn_sk_def['state']    ='disabled'
@@ -608,9 +636,9 @@ def score(data,position):
     #calculates the score for the game
     score=0
     if position=='Keeper/Chaser' or position=='Chaser':
-        score=(data['drive goal']+data['shot goal']-0.1*data['shot miss']
+        score=(2*data['drive goal']+2*data['shot goal']+0.8*data['team goal_c']-0.1*data['shot miss']
                 -0.1*(data['drive attempt']-data['drive goal'])+0.2*data['shot target']
-                +0.5*data['assist']+0.2*data['short pass complete']-0.05*data['short pass miss']
+                +1.5*data['assist']+0.2*data['short pass complete']-0.05*data['short pass miss']
                 +0.3*data['long pass complete']-0.1*data['long pass miss']
                 +0.1*data['catch-']-0.05*data['drop catch']+0.05*data['broken tackle']
                 +0.05*data['block']+0.8*data['intercept']+0.8*data['turnover forced']
@@ -646,7 +674,7 @@ def score(data,position):
         score=(0.5*data['control gained']-0.4*data['control lost']
                +2*data['no bludgers forced']-1.5*data['no bludgers own']
                +1*data['forced pass']+2*data['forced turnover']
-               +0.8*data['team goal']+0.25*data['shot block']+1.3*data['catch']
+               +data['team goal']+0.25*data['shot block']+1.3*data['catch']
                +5*data['snitch catch']+2*data['bubble broken'])
         #adds a different score per 10 percent interval of control
         if data['control percent']>0.6:
@@ -667,13 +695,17 @@ def score(data,position):
         else:
             score=(0.01*data['time defending']
                    +2*data['catch attempt']+10*data['snitch catch'])
-
+            
+    #adds a score amount for the offensive scored/offences and defensive rate        
+    score+=10*data['Offences scored rate']-10*data['Defence score allowed rate']
     #calculates negative points for cards        
-    score+=-1.5*data['blue']-0.5*data['goals allowed']
+    score+=-1.5*data['blue']-0.75*data['goals allowed']
     if data['red']==1 or data['yellow']==2:
          score+=-10
     else:
          score+=-3*data['yellow']-5*data['red']
+    if score<0:
+        score=0
     return(score)
 
 def create_summary(directory,group_cols):
@@ -693,7 +725,9 @@ def create_summary(directory,group_cols):
     #print(df_all)
     #groups the dataframes
     try:
-        cols_agg={'Score':'sum','Effectiveness':'sum','Pitch Time':'sum','drive goal':'sum','drive attempt':'sum','completed drive percent':'mean',
+        cols_agg={'Score':'sum','Effectiveness':'sum','Pitch Time':'sum','Offence':'sum','Defence':'sum',
+                  'Offences scored rate':'mean','Defence score allowed rate':'mean'
+                  ,'team goal_c':'sum','drive goal':'sum','drive attempt':'sum','completed drive percent':'mean',
           'shot percent':'mean','shot goal':'sum','shot target':'sum','shot miss':'sum',
              'shot attempt':'sum','assist':'sum','short pass percent':'mean','short pass complete':'sum','short pass miss':'sum','short pass':'sum',
              'long pass percent':'mean','long pass complete':'sum','long pass miss':'sum','long pass':'sum',
@@ -720,6 +754,7 @@ def create_summary(directory,group_cols):
     
     
 def save():
+    user=os.getlogin()
     #adds the data to the dataframe and resets variables
     #add try statement to save
     cb_gamespeed['state']='normal'
@@ -727,8 +762,21 @@ def save():
     
     initial_data={'Name':selected_player.get(),'Team':selected_team.get(),
                   'Position':selected_pos.get(),'Score':0,'Effectiveness':0,
-                  'Pitch Time':tot_pitchtime}
-
+                  'Pitch Time':tot_pitchtime,'Offence':state['offence'],'Defence':state['defence']}
+    
+    try:
+        #creates the data for offencive scoring rate and defencive scoring rate
+        initial_data['Offences scored rate']=(chaser_data['shot goal']+chaser_data['drive goal']
+                                              +chaser_data['team goal_c']+beater_data['team goal']
+                                              +seeker_data['snitch catch'])/initial_data['Offence']
+    except:
+        initial_data['Offences scored rate']=0
+    try:
+        initial_data['Defence score allowed rate']=(goals_allowed.get())/initial_data['Defence']
+    except:   
+        initial_data['Defence score allowed rate']=0
+        
+    #calculates percentages for relevant actions
     if selected_pos.get()=='Keeper/Chaser' or selected_pos.get()=='Chaser':
         if chaser_data['drive attempt']>0:
             chaser_data['completed drive percent']=round((chaser_data['drive goal']/chaser_data['drive attempt'])*100,2)
@@ -741,6 +789,7 @@ def save():
         if chaser_data['targeted']>0:
             chaser_data['catch percent']=round((chaser_data['catch-']/chaser_data['targeted'])*100,2)
         
+        #combines the 3 dictionaries into one large dictionary
         data={**initial_data,**chaser_data,**cards}
     elif selected_pos.get()=='Beater':
         data={**initial_data,**beater_data,**cards}

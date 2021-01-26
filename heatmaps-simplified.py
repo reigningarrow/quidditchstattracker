@@ -5,8 +5,7 @@ Created on Wed Sep 30 22:50:53 2020
 @author: Sam
 This is a messy code to make a get data to make a heatmap of events for a 
 team in a quidditch match
-TODO- Fix pass arrows- have to rework pass end system
-TODO- Map all events to be attacking towards the right
+
 """
 import tkinter as tk
 from tkinter import filedialog
@@ -21,7 +20,7 @@ if os.path.exists('./graphs/')==False:
     os.mkdir('./graphs/') #creates folder
 
 root=tk.Tk()   
-root.iconbitmap('hoops_icon.ico')      #sets the window icon
+#root.iconbitmap('hoops_icon.ico')      #sets the window icon
 root.title('Quidditch Analysis Alpha-Mapping')
 #add a menu bar
 graphs_menu=tk.Menu(root)
@@ -191,6 +190,7 @@ def click(row, col,number):
     btn_tackle.config(state='normal')
     btn_block.config(state='normal')
     btn_drop.config(state='normal')
+    btn_assist.config(state='normal')
     
     btn_btr.config(state='normal')
     btn_skr.config(state='normal')
@@ -206,7 +206,7 @@ def add_attempt(method):
         prev_event=dataframe['event'].iloc[-1]
         #if theres a catch or pass interaction use that as the pass end as well
         #this is to draw the arrows, this could be simplified but i dont think it affects speed much
-        if (method=='catch' or method=='block' or method=='drop') and player.get!=prev_name and prev_event=='pass':
+        if (method=='catch' or method=='block' or method=='drop' or method=='assist') and player.get!=prev_name and prev_event=='pass':
             #creates a dataframe for each new row then appends it to the dataframe
             d2=pd.DataFrame([{'id':idx.get()-1,'name':prev_name,'team':prev_team,'event':'pass end','coords':coords.get()}])
             #d2.set_index('id')
@@ -233,6 +233,8 @@ def add_attempt(method):
     btn_tackle.config(state='disabled')
     btn_block.config(state='disabled')
     btn_drop.config(state='disabled')
+    btn_assist.config(state='disabled')
+    
     
     btn_btr.config(state='disabled')
     btn_skr.config(state='disabled')
@@ -282,6 +284,7 @@ def clear():
     btn_tackle.config(state='disabled')
     btn_block.config(state='disabled')
     btn_drop.config(state='disabled')
+    btn_assist.config(state='disabled')
     
     btn_btr.config(state='disabled')
     btn_skr.config(state='disabled')
@@ -370,6 +373,7 @@ btn_catch=tk.Button(button_grid,text='Catch',width=12,command=lambda:add_attempt
 btn_tackle=tk.Button(button_grid,text='Completed tackle',width=16,command=lambda:add_attempt('tackle'))
 btn_block=tk.Button(button_grid,text='Block/interception',width=16+1,command=lambda:add_attempt('block'))
 btn_drop=tk.Button(button_grid,text='Dropped pass',width=16,command=lambda:add_attempt('drop'))
+btn_assist=tk.Button(button_grid,text='Assist',width=16,command=lambda:add_attempt('assist'))
 
 btn_btr=tk.Button(button_grid,text='Beater engages beater',width=25,command=lambda:add_attempt('beater'))
 btn_skr=tk.Button(button_grid,text='Snitch catch attempt',width=25,command=lambda:add_attempt('sk catch'))
@@ -378,11 +382,13 @@ btn_skr=tk.Button(button_grid,text='Snitch catch attempt',width=25,command=lambd
 btn_shot.grid(row=0,column=0,columnspan=3,sticky='ew')
 btn_goal.grid(row=0,column=3,columnspan=3,sticky='ew')
 btn_pass.grid(row=0,column=6,columnspan=3,sticky='ew')
-btn_pass_end.grid(row=2,columnspan=16,sticky='ew')
+
 btn_catch.grid(row=0,column=9,columnspan=3,sticky='ew')
 btn_tackle.grid(row=1,column=0,columnspan=4,sticky='ew')
 btn_block.grid(row=1,column=4,columnspan=4,sticky='ew')
 btn_drop.grid(row=1,column=8,columnspan=4,sticky='ew')
+btn_assist.grid(row=2,column=6,columnspan=6,sticky='ew')
+btn_pass_end.grid(row=2,column=0,columnspan=6,sticky='ew')
 
 btn_btr.grid(row=3,column=0,columnspan=6,sticky='ew')
 btn_skr.grid(row=3,column=6,columnspan=6,sticky='ew')
@@ -427,6 +433,7 @@ btn_catch.config(state='disabled')
 btn_tackle.config(state='disabled')
 btn_block.config(state='disabled')
 btn_drop.config(state='disabled')
+btn_assist.config(state='disabled')
 
 btn_btr.config(state='disabled')
 btn_skr.config(state='disabled')
@@ -525,10 +532,7 @@ def save_data():
     match=match[0]
     #this should create a progress bar, but program seems to freeze
     #whilst saving so eh
-    bar = ttk.Progressbar(button_grid, length=400)
-    bar.grid(row=4,column=0,columnspan=40,sticky='ew')
-    bar['value'] = 0
-    it_length=len(dataframe)*2*6
+
     #goes through each unique value in the team then name columns
     #this means it plots graphs per team and then per person
     try:
@@ -536,6 +540,7 @@ def save_data():
     except:
         print("Can't reset index")
     for kind in ['team','name']:
+        plt.ion()
         print('\n\n\n\n\n\n')
         for team in dataframe[kind].unique():
             #makes sure there is only data that we want in the dataframe
@@ -545,7 +550,7 @@ def save_data():
 
             #choose the types of graphs to be looked at individually
             #so shots and goals are grouped
-            graphs=[['shot','goal'],['pass','catch','pass end','drop','block'],
+            graphs=[['shot','goal'],['pass','catch','pass end','drop','block','assist'],
                     ['catch','drop'],['block'],['beater'],['sk catch']]
             
             for item in graphs:
@@ -559,7 +564,7 @@ def save_data():
                 if len(df.index)==0:
                     continue
                 #if its a shot and pass map but theres no passes dont do anything
-                elif item==['pass','catch','pass end','drop','block'] and (df['event'] == 'pass').sum()==0:
+                elif item==graphs[1] and (df['event'] == 'pass').sum()==0:
                     continue
                 print(item,'\n',df,'\n\n')
                 #if its a shot map only show half of the pitch
@@ -605,7 +610,7 @@ def save_data():
                     #adds the data for the kde plot
                     x_kde.append(x)
                     y_kde.append(y)
-                    if item==['pass','catch','pass end','drop','block']:
+                    if item==graphs[1]:
                         #if its a pass start don't plot anything wait till the pass end
                          if d2['event']=='pass':
                              continue
@@ -641,6 +646,8 @@ def save_data():
                                      colour='red'
                                  elif evt=='drop':
                                      colour='orange'
+                                 elif evt=='assist':
+                                     colour='pink'
                              except:
                                  raise Exception("Can't set the colours of the arrows")
                                  #draw the arrows 
@@ -669,9 +676,9 @@ def save_data():
 
                 #if its a goal/shot graph make sure it only shows one part of the pitch
                 #Also adds arrow showing the direction of attack
-                if item==['shot','goal'] and len(x_kde)>6 and len(y_kde)>6:
+                if item==['shot','goal'] and len(x_kde)>4 and len(y_kde)>4:
                         plt.xlim(29.5,60.2)
-                        
+                        plt.ylim(0,33)
                         #adds name and player/team name
                         plt.annotate((str(item)+' '+team),(31,32),size=40)
                         
@@ -707,8 +714,9 @@ def save_data():
                
                 
                 
-                
-
+                #makes sure graph is not displayed, basically makes things faster when as an exe
+                plt.ioff()
+                #plt.close()
                 #saves the data and graphs       
                 if kind=='team':
                     #makes sure the folder exists
@@ -727,8 +735,8 @@ def save_data():
                     fig.savefig('./graphs/'+selected_tournament.get()+'/'+match
                                 +'/'+d2['team']+'/'+team+'-'+str(item[0])+'.png', dpi=100,facecolor=fig.get_facecolor())
                 plt.show()
-                #adds a bit to the end of the bar
-                bar['value'] +=1/it_length
+
+
                 
     print('FINISHED!! :D')
     #basically if its just a totals file dont save it again
@@ -777,9 +785,6 @@ def save_data():
         else:
             dataframe.to_csv('./graphs/totals.csv')
     
-        
-    
-    bar.grid_forget() #removes the loading bar once done
     clear() #clears the data from the listbox and dataframe
 
     
