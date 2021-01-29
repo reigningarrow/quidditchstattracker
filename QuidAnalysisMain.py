@@ -320,17 +320,69 @@ def pitch_time(startstop):
             for child in seekerframe.winfo_children():                
                 child.configure(state='disabled')
             btn_sk_catch['state']='normal'
+
+
+#create a dictionary counting the number of attacks and defences happens
 state={'offence':0,'defence':0}
+
 def game_state(attempt):
+    #adds one to the counter for each game state
     state[attempt]+=1
     #disables one the button that was just clicked to stop any accidental double clicking
     if attempt=='offence':
         btn_offence['state']='disabled'
         btn_defence['state']='normal'
         
+        #disables all defensive chaser options
+        btn_ch_drive_goal['state']='normal'
+        btn_ch_drive_attempt['state']='normal'
+        btn_ch_shot_goal['state']='normal'
+        btn_ch_shot_tgt['state']='normal'
+        btn_ch_shot_miss['state']='normal'  
+        btn_ch_assist['state']='normal'  
+        btn_ch_teamgoal['state']='normal' 
+        btn_ch_s_pass_cpt['state']='normal' 
+        btn_ch_s_pass_miss['state']='normal'
+        btn_ch_l_pass_cpt['state']='normal' 
+        btn_ch_l_pass_miss['state']='normal' 
+        btn_ch_catch['state']='normal'       
+        btn_ch_drp_catch['state']='normal'   
+        btn_ch_brk_tkl['state']='normal'
+        
+        #enables all defensive options
+        btn_ch_pass_blk['state']='disabled'
+        btn_ch_intercept['state']='disabled'
+        btn_ch_tackle_cpt['state']='disabled'
+        btn_ch_tackle_ptl['state']='disabled'
+        btn_ch_turnover_fcd['state']='disabled'
+        
     elif attempt=='defence':
         btn_offence['state']='normal'
         btn_defence['state']='disabled'
+        
+        #disables all offensive chaser options
+        btn_ch_drive_goal['state']='disabled'
+        btn_ch_drive_attempt['state']='disabled'
+        btn_ch_shot_goal['state']='disabled'
+        btn_ch_shot_tgt['state']='disabled'
+        btn_ch_shot_miss['state']='disabled'  
+        btn_ch_assist['state']='disabled'  
+        btn_ch_teamgoal['state']='disabled' 
+        btn_ch_s_pass_cpt['state']='disabled' 
+        btn_ch_s_pass_miss['state']='disabled'
+        btn_ch_l_pass_cpt['state']='disabled' 
+        btn_ch_l_pass_miss['state']='disabled' 
+        btn_ch_catch['state']='disabled'       
+        btn_ch_drp_catch['state']='disabled'   
+        btn_ch_brk_tkl['state']='disabled'
+        
+        #enables all defensive options
+        btn_ch_pass_blk['state']='normal'
+        btn_ch_intercept['state']='normal'
+        btn_ch_tackle_cpt['state']='normal'
+        btn_ch_tackle_ptl['state']='normal'
+        btn_ch_turnover_fcd['state']='normal'
+
 
 infoframe.grid(row=2,column=0,columnspan=3)
 #on pitch off pitch
