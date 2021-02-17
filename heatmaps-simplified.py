@@ -3,7 +3,7 @@
 Created on Wed Sep 30 22:50:53 2020
 
 @author: Sam
-This is a messy code to make a get data to make a heatmap of events for a 
+This is a messy code to make a get data to make a heatmap of events for a
 team in a quidditch match
 
 """
@@ -19,8 +19,8 @@ import numpy as np
 if os.path.exists('./graphs/')==False:
     os.mkdir('./graphs/') #creates folder
 
-root=tk.Tk()   
-#root.iconbitmap('hoops_icon.ico')      #sets the window icon
+root=tk.Tk()
+root.iconbitmap('hoops_icon.ico')      #sets the window icon
 root.title('Quidditch Analysis Alpha-Mapping')
 #add a menu bar
 graphs_menu=tk.Menu(root)
@@ -47,7 +47,7 @@ def select_tournament():
     cb_match['state']='readonly'
     btn_choose_match['state']='normal'
     lstbox_players.delete(0,'end') #removes everything from listbox
-    
+
 
 
 def select_match():
@@ -74,12 +74,12 @@ def select_match():
     btn_side['state']='normal'
     cb_side['state']='readonly'
     cb_side.set('')
-    #gets the list of players from the data in the match and adds it 
+    #gets the list of players from the data in the match and adds it
     #to the listbox
     lstbox_players.delete(0,'end') #removes everything from listbox
     for players in playerlist:
-        lstbox_players.insert('end',(players))  
-    
+        lstbox_players.insert('end',(players))
+
 
 selected_tournament=tk.StringVar()
 #at the start this gets all the available tournaments and will add them to the combobox
@@ -95,7 +95,7 @@ matchlist=list_files1('./games/game_def/', '.csv')
 def player_team(event):
     #gets the currently selected players team from the combobox selection
     #this changes each time a new player is selected
-    #the try is in there because it throws an error if you 
+    #the try is in there because it throws an error if you
     #select a different listbox for some reason
 
     try:
@@ -107,7 +107,7 @@ def player_team(event):
         team.set(p_team[p_team_index])
         #player.set(cb_player.get())
         player.set(selected_player)
-        #enables the buttons 
+        #enables the buttons
         if len(team.get())>14: #if team name is too long use the last word in their name
             team_l=team.get().split(' ')
             lbl_team.configure(text=team_l[-1])
@@ -141,8 +141,6 @@ btn_choose_match.grid(row=2,column=2,sticky='ew')
 cb_match.        grid(row=2,column=0,columnspan=3,sticky='w')
 
 btn_choose_match['state']='disabled'
-#cb_player=ttk.Combobox(selection_frame,value='',state='readonly') 
-#cb_player.bind('<<ComboboxSelected>>',player_team) #sets it so it registers a value when the combobox is changed
 
 lstbox_players=tk.Listbox(selection_frame,height=20,width=30)
 scrl_players=tk.Scrollbar(selection_frame) #scroll box
@@ -166,20 +164,19 @@ lbl_team ['state']='disabled'
 selection_frame.grid(row=0,column=1,rowspan=3,sticky='nsew')
 coords=tk.StringVar()
 button_num=tk.IntVar()
-button=[]   
+button=[]
 
 idx=tk.IntVar()
-  
-playername=0
 
+playername=0
 
 def click(row, col,number):
     #changes the previously selected button back to the normal colour
     #makes sure only one button can be highlighted
-    button[button_num.get()].config(bg="SystemButtonFace")    
-    label.configure(text=(col, row))          
+    button[button_num.get()].config(bg="SystemButtonFace")
+    label.configure(text=(col, row))
     coords.set(label.cget('text')) #sets the coordinates to a tuple
-    button[number].config(bg='red') #make selected button red
+    button[number].config(bg='red')#make selected button red
     button_num.set(number)
     #enables buttons again
     btn_goal.config(state='normal')
@@ -191,10 +188,10 @@ def click(row, col,number):
     btn_block.config(state='normal')
     btn_drop.config(state='normal')
     btn_assist.config(state='normal')
-    
+
     btn_btr.config(state='normal')
     btn_skr.config(state='normal')
-    
+
 def add_attempt(method):
     global dataframe
     #dataframe=pd.DataFrame()
@@ -221,7 +218,7 @@ def add_attempt(method):
     #updates the index number so rows dont get row values with multiple numbers
     idx.set(idx.get()+1)
 
-    
+
     #changes selected button colour back to normal
     button[button_num.get()].config(bg="SystemButtonFace")
     #disables the data buttons so you can't just spam things accidentally
@@ -234,19 +231,19 @@ def add_attempt(method):
     btn_block.config(state='disabled')
     btn_drop.config(state='disabled')
     btn_assist.config(state='disabled')
-    
-    
+
+
     btn_btr.config(state='disabled')
     btn_skr.config(state='disabled')
     if lstbox_events.size()>0:
         btn_remove.config(state='normal')
         btn_reset.config(state='normal')
         save.config(state='normal')
-    
-    print(dataframe) 
+
+    print(dataframe)
     #adds the item to listbox
     lstbox_events.insert('end',((idx.get()-1)
-                                ,method,str(team.get()),str(player.get()),coords.get()))    
+                                ,method,str(team.get()),str(player.get()),coords.get()))
 '''
 def clear():
     coords.set('')
@@ -285,7 +282,7 @@ def clear():
     btn_block.config(state='disabled')
     btn_drop.config(state='disabled')
     btn_assist.config(state='disabled')
-    
+
     btn_btr.config(state='disabled')
     btn_skr.config(state='disabled')
     for c in range(rows*cols):
@@ -293,52 +290,52 @@ def clear():
 def remove():
     #deletes selected item from the listbox and drops it from the dataframe
     #try:
-        #gets the currently selected item in the listbox
-        vari=lstbox_events.get(lstbox_events.curselection())
-        print(vari)
-        #print(lstbox_events.curselection())
-        #index = lstbox_events.get(0, "end").index(tk.ANCHOR)
-        #deletes the item from the listbox
-        lstbox_events.delete(tk.ANCHOR)
-        #sets the index of the dataframe to the unique id number
-        #then removes the relevant row as vari[0] gets the id number
-        dataframe.set_index('id',inplace=True)
-        dataframe.drop(index=vari[0],inplace=True)
-        #resets the index to not be id cos it gives errors sometimes
-        dataframe.reset_index(inplace=True)
+    #gets the currently selected item in the listbox
+    vari=lstbox_events.get(lstbox_events.curselection())
+    print(vari)
+    #print(lstbox_events.curselection())
+    #index = lstbox_events.get(0, "end").index(tk.ANCHOR)
+    #deletes the item from the listbox
+    lstbox_events.delete(tk.ANCHOR)
+    #sets the index of the dataframe to the unique id number
+    #then removes the relevant row as vari[0] gets the id number
+    dataframe.set_index('id',inplace=True)
+    dataframe.drop(index=vari[0],inplace=True)
+    #resets the index to not be id cos it gives errors sometimes
+    dataframe.reset_index(inplace=True)
     #except:
         #raise Exception("Currently can't remove some of the events in time, working on it")
-        print(dataframe)
-        if lstbox_events.size()>0:
-            btn_remove.config(state='normal')
-            btn_reset.config(state='normal')
-            save.config(state='normal')
-        else:
-            btn_remove.config(state='disabled')
-            btn_reset.config(state='disabled')
-            save.config(state='disabled')
+    print(dataframe)
+    if lstbox_events.size()>0:
+        btn_remove.config(state='normal')
+        btn_reset.config(state='normal')
+        save.config(state='normal')
+    else:
+        btn_remove.config(state='disabled')
+        btn_reset.config(state='disabled')
+        save.config(state='disabled')
 
 
-#Initial setup    
-i=0    
+#Initial setup
+i=0
 #creates buttons and arranges it
 for row in range(1,rows+1):
     for col in range(1,cols+1):
         #this creates a king of list of button items with the parameter
-        button.append( tk.Button(pitch_frame, text='      ', 
+        button.append( tk.Button(pitch_frame, text='      ',
                            command=lambda row=row,col=col,number=i:
                                click(row, col,number)))
         #provides spacing to show pitch markings
-        if col==15: #midline    
+        if col==15: #midline
             button[i].grid(row=row, column=col, sticky="nsew",padx=(0,5))
-            
+
         elif col==10 or col==20: #keeper lines
             button[i].grid(row=row, column=col, sticky="nsew",padx=(0,5))
         elif col==7 or col==23: #hoop lines
             button[i].grid(row=row, column=col, sticky="nsew",padx=(0,5))
             if (row==7 or row==8 or row==9):
                 button[i].grid(row=row, column=col, sticky="nsew",padx=(0,12))
-            
+
         else:
             button[i].grid(row=row, column=col, sticky="nsew")
         i+=1
@@ -350,7 +347,7 @@ label = tk.Label(root, text="")
 def get_side():
     cb_side['state']='disabled'
     btn_side['state']='disabled'
-    
+
 
 btn_side=tk.Button(text='Team playing this side',command=get_side)
 cb_side=ttk.Combobox()
@@ -439,14 +436,14 @@ btn_btr.config(state='disabled')
 btn_skr.config(state='disabled')
 
 
-def createPitch(color='black',pitch='full'): 
+def createPitch(color='black',pitch='full'):
     # in meters
     # Code by @JPJ_dejong
     #modified by @reigningarrow
-    
+
     """
     creates a plot in which the 'length' is the length of the pitch (goal to goal).
-    And 'width' is the width of the pitch (sideline to sideline). 
+    And 'width' is the width of the pitch (sideline to sideline).
     """
     #get pitch dimensions
     length=60
@@ -455,7 +452,7 @@ def createPitch(color='black',pitch='full'):
     if pitch=='full':
         #Create figure
         fig=plt.figure(figsize=(length,width))
-        
+
         #fig.set_size_inches(7, 5)
         ax=fig.add_subplot(1,1,1)
         #ax.set_facecolor('#94B560') #this doesnt work but doesnt need to
@@ -466,12 +463,11 @@ def createPitch(color='black',pitch='full'):
         plt.plot([length,0],[0,0], color=linecolor,linewidth=10)
         #halfway line
         plt.plot([length/2,length/2],[0,width], color=linecolor)
-        
+
         #Edge of keeper zones
         plt.plot([length/2-11,length/2-11],[0,width],color=linecolor)
         plt.plot([length/2+11,length/2+11],[0,width],color=linecolor)
-        
-        
+
         #Goal lines
         plt.plot([length/2+16.5,length/2+16.5],[0,width],color=linecolor)
         plt.plot([length/2-16.5,length/2-16.5],[0,width],color=linecolor)
@@ -480,7 +476,7 @@ def createPitch(color='black',pitch='full'):
         plt.plot([length/2+16.5,length/2+16.5],[width/2-2.5-0.9,width/2-2.5+0.9],color=linecolor,linewidth=20)
         plt.plot([length/2+16.5,length/2+16.5],[width/2-0.9,width/2+0.9],color=linecolor,linewidth=20)
         plt.plot([length/2+16.5,length/2+16.5],[width/2+2.5-0.9,width/2+2.5+0.9],color=linecolor,linewidth=20)
-        
+
         #Left Hoops
         plt.plot([length/2-16.5,length/2-16.5],[width/2-2.5-0.9,width/2-2.5+0.9],color=linecolor,linewidth=20)
         plt.plot([length/2-16.5,length/2-16.5],[width/2-0.9,width/2+0.9],color=linecolor,linewidth=20)
@@ -503,7 +499,7 @@ def createPitch(color='black',pitch='full'):
         
         #Edge of keeper zones
         plt.plot([length/2+11,length/2+11],[0,width],color=linecolor)
-        
+
         
         #Goal lines
         plt.plot([length/2+16.5,length/2+16.5],[0,width],color=linecolor)
@@ -512,7 +508,7 @@ def createPitch(color='black',pitch='full'):
         plt.plot([length/2+16.5,length/2+16.5],[width/2-2.5-0.9,width/2-2.5+0.9],color=linecolor,linewidth=20)
         plt.plot([length/2+16.5,length/2+16.5],[width/2-0.9,width/2+0.9],color=linecolor,linewidth=20)
         plt.plot([length/2+16.5,length/2+16.5],[width/2+2.5-0.9,width/2+2.5+0.9],color=linecolor,linewidth=20)
-        
+
     else:
         #give error if the wrong argument is inputted it shouldn't but just incase
         raise Exception('Only acceptable keywords are "half" and "full"')
@@ -520,7 +516,7 @@ def createPitch(color='black',pitch='full'):
     
     plt.axis('off')
     #plt.show()
-    
+
     return fig,ax
 
 
@@ -624,10 +620,10 @@ def save_data():
                          
                              if selected_match.get()!='totals.csv':
                                  #makes the data look the same way you record it, ie not flipped
-                                 if (y_start-33)<0:
-                                     y_start=abs(y_start-33)+1
-                                 else:
-                                     y_start=y_start-33+1
+                                if (y_start-33)<0:
+                                    y_start=abs(y_start-33)+1
+                                else:
+                                    y_start=y_start-33+1
                                  
                          colour='gray'
                          #print('event is-',d2['event'])
@@ -667,7 +663,7 @@ def save_data():
                         #if its a team map add players names     
                         if kind=='team':
                             plt.annotate(d2['name'],(x,y),size=25)
-                        
+
                         ax.add_patch(circle) #adds it to the graph
                 #fig.set_facecolor('green')
                 #adds the kde plot to the graph
@@ -713,11 +709,10 @@ def save_data():
                     
                
                 
-                
                 #makes sure graph is not displayed, basically makes things faster when as an exe
                 plt.ioff()
                 #plt.close()
-                #saves the data and graphs       
+                #saves the data and graph
                 if kind=='team':
                     #makes sure the folder exists
                     if os.path.exists('./graphs/'+selected_tournament.get()+'/'+match
@@ -735,9 +730,8 @@ def save_data():
                     fig.savefig('./graphs/'+selected_tournament.get()+'/'+match
                                 +'/'+d2['team']+'/'+team+'-'+str(item[0])+'.png', dpi=100,facecolor=fig.get_facecolor())
                 plt.show()
+                plt.close()
 
-
-                
     print('FINISHED!! :D')
     #basically if its just a totals file dont save it again
     if selected_match.get()!='totals.csv':
@@ -753,7 +747,7 @@ def save_data():
             y_coords=int(coords[0])
             
             y_coords=abs(y_coords-16) #transforms the y coordinates so the 0 value is at the bottom of the graph properly
-            
+
             #if the team isnt attacking from the left change it to do so        
             if data['team']!=cb_side.get():
                 x_coords=abs(x_coords-31)

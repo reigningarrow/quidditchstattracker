@@ -14,21 +14,23 @@ Program for recording quidditch stats using tkinter and pandas
 #TODO add offence/defence button for goals allowed on defence/completed offence
 #TODO add team goal for chasers
 
-import tkinter as tk
-import pandas as pd
-import os 
-import time   
-import shutil   
-from tkinter import messagebox 
+
+import os
+import time
+import shutil
+from tkinter import messagebox
 from tkinter import ttk
 from tkinter import filedialog
+import tkinter as tk
+import pandas as pd
+
 
 root=tk.Tk()
 #sets root window basic info
 #root.iconbitmap('hoops_icon.ico')      #sets the window icon
-root.title('Quidditch Analysis Alpha')  #sets window title       
-root.geometry('470x690')  
-    
+root.title('Quidditch Analysis Alpha')  #sets window title
+root.geometry('470x690')
+
 #add a menu bar
 main_menu=tk.Menu(root)
 root.config(menu=main_menu)
@@ -49,7 +51,7 @@ if os.path.exists('./games/season_results')==False:
     os.mkdir('./games/season_results') #creates folder
 
 
-    
+
 
 #adds tournament selection button
 def select_tournament():
@@ -60,7 +62,7 @@ def select_tournament():
     #adds the list of games to the games combobox
     cb_match['values']=game_list
     cb_match['state']='readonly'
-    
+
 selected_tournament=tk.StringVar()
 tournament_list= [f.name for f in os.scandir('./games/game_def/') if f.is_dir()]
 
@@ -128,7 +130,7 @@ def select_player():
     beaterframe.grid_forget()
     seekerframe.grid_forget()
     #displays relevant frame
-    
+
     try:
     #sets the selected player
         p_team=(df_match['Team'].to_list())
@@ -146,17 +148,17 @@ def select_player():
         elif pos.get()=='Seeker':
             seekerframe.grid(row=6,column=0,columnspan=3, pady=(5,0))
             btn_goal_allowed['state']='disabled'
-            
-        #checks that user has entered a valid option before enabling buttons    
+
+        #checks that user has entered a valid option before enabling buttons  
         if pos.get() in ['Keeper/Chaser','Chaser','Beater','Seeker']:
             for child in cardframe.winfo_children():
                 child.configure(state='normal')
-                btn_on_pitch['state']='normal'        
+                btn_on_pitch['state']='normal'
         btn_off_pitch['state']='disabled'
         btn_goal_allowed['state']='disabled'
         btn_save_results['state']='normal'
         btn_on_pitch['state']='normal'
-        
+
         btn_offence['state']='disabled'
         btn_defence['state']='disabled'
 
@@ -169,7 +171,7 @@ def player_team(event):
         p_team=(df_match['Team'].to_list())
         p_team_index=playerlist.index(cb_player.get())
         team.set(p_team[p_team_index])
-        #enables the buttons 
+        #enables the buttons
         if len(team.get())>14: #if team name is too long use the last word in their name
             team_l=team.get().split(' ')
             lbl_team.configure(text=team_l[-1])
@@ -182,9 +184,9 @@ def player_team(event):
     except:
         messagebox.showerror('Error Occured','An error has occured when trying to select a player')
 
-cb_player=ttk.Combobox(infoframe,value='',state='readonly') 
+cb_player=ttk.Combobox(infoframe,value='',state='readonly')
 cb_player.bind('<<ComboboxSelected>>',player_team) #sets it so it registers a value when the combobox is changed
-pos=tk.StringVar()     
+pos=tk.StringVar()
 player=tk.StringVar()
 team  =tk.StringVar()
 team.set('Team')
@@ -228,10 +230,10 @@ def pitch_time(startstop):
         btn_goal_allowed['state']='normal'
         btn_reset['state']='disabled'
         btn_save_results['state']='disabled'
-        
+
         btn_offence['state']='normal'
         btn_defence['state']='normal'
-        
+
         for child in cardframe.winfo_children():
             child.configure(state='disable')
         btn_goal_allowed['state']='normal'
@@ -241,7 +243,7 @@ def pitch_time(startstop):
             for child in chaserframe.winfo_children():
                 child.configure(state='normal')
 
-        elif pos.get()=='Beater':             
+        elif pos.get()=='Beater':
             for child in beaterframe.winfo_children():
                 child.configure(state='normal')
             if beater_data['control gained']>beater_data['control lost']:
@@ -263,12 +265,12 @@ def pitch_time(startstop):
                 btn_bt_bubble_created.grid_forget()
                 btn_bt_bubble_lost.grid_forget()
         elif pos.get()=='Seeker':
-            
+
             for child in seekerframe.winfo_children():
                 child.configure(state='normal')
             btn_sk_catch['state']='disabled'
             btn_goal_allowed['state']='disabled'
-            btn_sk_atk_stp['state']='disabled'        
+            btn_sk_atk_stp['state']='disabled'
             btn_sk_def_stp['state']='disabled'
             #restarts seeker timers if applicable
             if seeker_atk.get()==1:
@@ -288,17 +290,17 @@ def pitch_time(startstop):
         for child in cardframe.winfo_children():
             child.configure(state='normal')
         btn_goal_allowed['state']='disabled'
-        
+
         btn_offence['state']='disabled'
         btn_defence['state']='disabled'
-        
+
         if pos.get()=='Keeper/Chaser' or pos.get()=='Chaser':
             for child in chaserframe.winfo_children():
                 child.configure(state='disabled')
-            
+
         elif pos.get()=='Beater':
             if beater_data['control gained']>beater_data['control lost']:
-                    timers('control lost')
+                timers('control lost')
             if beater_data['bubble created']>beater_data['bubble lost']:
                 timers('bubble lost')
             for child in beaterframe.winfo_children():
@@ -317,7 +319,7 @@ def pitch_time(startstop):
             elif seeker_def.get()==1:
                 timers('def stop')
                 seeker_def.set(1)
-            for child in seekerframe.winfo_children():                
+            for child in seekerframe.winfo_children():
                 child.configure(state='disabled')
             btn_sk_catch['state']='normal'
 
@@ -332,50 +334,50 @@ def game_state(attempt):
     if attempt=='offence':
         btn_offence['state']='disabled'
         btn_defence['state']='normal'
-        
+
         #disables all defensive chaser options
         btn_ch_drive_goal['state']='normal'
         btn_ch_drive_attempt['state']='normal'
         btn_ch_shot_goal['state']='normal'
         btn_ch_shot_tgt['state']='normal'
-        btn_ch_shot_miss['state']='normal'  
-        btn_ch_assist['state']='normal'  
-        btn_ch_teamgoal['state']='normal' 
-        btn_ch_s_pass_cpt['state']='normal' 
+        btn_ch_shot_miss['state']='normal'
+        btn_ch_assist['state']='normal'
+        btn_ch_teamgoal['state']='normal'
+        btn_ch_s_pass_cpt['state']='normal'
         btn_ch_s_pass_miss['state']='normal'
-        btn_ch_l_pass_cpt['state']='normal' 
-        btn_ch_l_pass_miss['state']='normal' 
-        btn_ch_catch['state']='normal'       
-        btn_ch_drp_catch['state']='normal'   
+        btn_ch_l_pass_cpt['state']='normal'
+        btn_ch_l_pass_miss['state']='normal'
+        btn_ch_catch['state']='normal'
+        btn_ch_drp_catch['state']='normal'
         btn_ch_brk_tkl['state']='normal'
-        
+
         #enables all defensive options
         btn_ch_pass_blk['state']='disabled'
         btn_ch_intercept['state']='disabled'
         btn_ch_tackle_cpt['state']='disabled'
         btn_ch_tackle_ptl['state']='disabled'
         btn_ch_turnover_fcd['state']='disabled'
-        
+
     elif attempt=='defence':
         btn_offence['state']='normal'
         btn_defence['state']='disabled'
-        
+
         #disables all offensive chaser options
         btn_ch_drive_goal['state']='disabled'
         btn_ch_drive_attempt['state']='disabled'
         btn_ch_shot_goal['state']='disabled'
         btn_ch_shot_tgt['state']='disabled'
-        btn_ch_shot_miss['state']='disabled'  
-        btn_ch_assist['state']='disabled'  
-        btn_ch_teamgoal['state']='disabled' 
-        btn_ch_s_pass_cpt['state']='disabled' 
+        btn_ch_shot_miss['state']='disabled'
+        btn_ch_assist['state']='disabled'
+        btn_ch_teamgoal['state']='disabled'
+        btn_ch_s_pass_cpt['state']='disabled'
         btn_ch_s_pass_miss['state']='disabled'
-        btn_ch_l_pass_cpt['state']='disabled' 
-        btn_ch_l_pass_miss['state']='disabled' 
-        btn_ch_catch['state']='disabled'       
-        btn_ch_drp_catch['state']='disabled'   
+        btn_ch_l_pass_cpt['state']='disabled'
+        btn_ch_l_pass_miss['state']='disabled'
+        btn_ch_catch['state']='disabled'
+        btn_ch_drp_catch['state']='disabled'
         btn_ch_brk_tkl['state']='disabled'
-        
+
         #enables all defensive options
         btn_ch_pass_blk['state']='normal'
         btn_ch_intercept['state']='normal'
@@ -411,14 +413,14 @@ chaser_data={'drive goal':0,'drive attempt':0,'completed drive percent':0,'shot 
 #dictionary of extra stuff that didnt need buttons
 chaser_extra={'shot goal':'shot attempt','shot target':'shot attempt',
               'shot miss':'shot attempt','short pass complete':'short pass','short pass miss':'short pass',
-              'long pass complete':'long pass','long pass miss':'long pass','catch-':'targeted','drop catch':'targeted'} 
+              'long pass complete':'long pass','long pass miss':'long pass','catch-':'targeted','drop catch':'targeted'}
 
 
 def add_value(name):
     #adds values to the chaser data
     chaser_data[name]=chaser_data[name]+1
     if name in chaser_extra:
-       chaser_data[chaser_extra[name]]= chaser_data[chaser_extra[name]]+1
+        chaser_data[chaser_extra[name]]= chaser_data[chaser_extra[name]]+1
 
 #creates buttons and labels for chaser frame
 button_width=30
@@ -444,7 +446,7 @@ btn_ch_tackle_cpt   =tk.Button(chaserframe,text='Full tackle',width=int(button_w
 btn_ch_tackle_ptl   =tk.Button(chaserframe,text='Partial tackle',width=int(button_width/2+2),command=lambda:add_value('partial tackle'))
 btn_ch_turnover_fcd =tk.Button(chaserframe,text='Turnover forced',width=button_width+6,command=lambda:add_value('turnover forced'))
 
-#adds buttons to frame 
+#adds buttons to frame
 lbl_ch_offence.grid(row=0,column=0,columnspan=12)
 btn_ch_drive_goal.grid(row=1,column=0,columnspan=6)
 btn_ch_drive_attempt.grid(row=1,column=6,columnspan=6)
@@ -484,7 +486,7 @@ def bt_add_value(name):
         pass
     if name=='snitch catch':
         #set snitch on to 0
-        #as brooms down bubble timer already stopped        
+        #as brooms down bubble timer already stopped
         snitch_on.set(0)
         #disable buttons once snitch is caught
         btn_bt_bubble_broken['state']='disabled'
@@ -493,7 +495,7 @@ def bt_add_value(name):
         btn_bt_snitch_catch['state']='disabled'
 
 
-snitch_on=tk.IntVar()    
+snitch_on=tk.IntVar()
 def sop():
     snitch_on.set(1)
     #for when snitch is on pitch
@@ -557,8 +559,8 @@ def timers(timer):
     #function for allowing the measure of durations
     if timer=='attack':
         state['offence']+=1
-        seeker_data['time attacking']=seeker_data['time attacking']-time.time()  
-        btn_sk_atk_stp['state']='normal'        
+        seeker_data['time attacking']=seeker_data['time attacking']-time.time()
+        btn_sk_atk_stp['state']='normal'
         btn_sk_atk['state']='disabled'
         btn_sk_def_stp['state']='disabled'
         btn_sk_def['state']    ='disabled'
@@ -566,7 +568,7 @@ def timers(timer):
         seeker_atk.set(1)
     elif timer=='attack stop':
         seeker_data['time attacking']=time.time()+seeker_data['time attacking']
-        btn_sk_atk_stp['state']='disabled'        
+        btn_sk_atk_stp['state']='disabled'
         btn_sk_atk['state']    ='normal'
         btn_sk_def_stp['state']='disabled'
         btn_sk_def['state']    ='normal'
@@ -577,7 +579,7 @@ def timers(timer):
         seeker_data['time defending']=seeker_data['time defending']-time.time()
         btn_sk_def_stp['state']='normal'
         btn_sk_def['state']    ='disabled'
-        btn_sk_atk_stp['state']='disabled'        
+        btn_sk_atk_stp['state']='disabled'
         btn_sk_atk['state']='disabled'
 
         seeker_def.set(1)
@@ -585,7 +587,7 @@ def timers(timer):
         seeker_data['time defending']=seeker_data['time defending']+time.time()
         btn_sk_def_stp['state']='disabled'
         btn_sk_def['state']    ='normal'
-        btn_sk_atk_stp['state']='disabled'      
+        btn_sk_atk_stp['state']='disabled'
         btn_sk_atk['state']='normal'
 
         seeker_def.set(0)
@@ -618,7 +620,7 @@ def timers(timer):
         snitch_time.set(snitch_time.get()-time.time())
     elif timer=='snitch off':
         snitch_time.set(snitch_time.get()+time.time())
-    
+
 #snitch buttons
 btn_sk_atk    =tk.Button(seekerframe,text='Attack start',width=int(button_width/2+2),command=lambda: timers('attack'))
 btn_sk_atk_stp=tk.Button(seekerframe,text='Attack stop',width=int(button_width/2+2),command=lambda:timers('attack stop'))
@@ -635,7 +637,7 @@ btn_sk_attempt.grid(row=2,column=0)
 btn_sk_catch.grid(row=2,column=1)
 
 
-btn_sk_atk_stp['state']='disabled'        
+btn_sk_atk_stp['state']='disabled'
 btn_sk_def_stp['state']='disabled'
 
 #bt_turnover=tk.StringVar()
@@ -651,7 +653,7 @@ def card_fn(data):
             bt_turnover=(messagebox.askyesno('Bludger Turnover','Is there a bludger turnover?'))
         if bt_turnover==1:
             beater_data['control lost']=beater_data['control lost']+1
-    #if getting the card would lead to a double yellow, make it a red card        
+    #if getting the card would lead to a double yellow, make it a red card    
     #if cards['yellow']==2:
         #cards['red']=1
     #if player gets a red card they're out of the game
@@ -663,7 +665,7 @@ def card_fn(data):
 goals_allowed=tk.IntVar()
 def goals():
     goals_allowed.set(goals_allowed.get()+1)
-    
+
 #add buttons for cardsframe
 btn_blue_cd=tk.Button(cardframe,text='Blue card',width=int(button_width/3+1),command=lambda: card_fn('blue'))
 btn_yellow_cd=tk.Button(cardframe,text='Yellow card',width=int(button_width/3+1),command=lambda: card_fn('yellow'))
@@ -721,7 +723,7 @@ def score(data,position):
                 score+=2
             elif data['catch percent']<0.3:
                 score+=-1.5
-            
+
     if position=='Beater':
         score=(0.5*data['control gained']-0.4*data['control lost']
                +2*data['no bludgers forced']-1.5*data['no bludgers own']
@@ -739,7 +741,7 @@ def score(data,position):
                 score += int('0235999'[max(int(data['bubble percent'])//10-5,0)])
             elif data['bubble percent']<0.4:
                 score += -1*int('752100'[max(int(data['bubble percent'])//10-5,0)])
-            
+
     if position=='Seeker':
         if data['time attacking']>0:
             score=(500/data['time attacking']+0.01*data['time defending']
@@ -747,18 +749,18 @@ def score(data,position):
         else:
             score=(0.01*data['time defending']
                    +2*data['catch attempt']+10*data['snitch catch'])
-            
-    #adds a score amount for the offensive scored/offences and defensive rate        
+
+    #adds a score amount for the offensive scored/offences and defensive rate     
     score+=10*data['Offences scored rate']-10*data['Defence score allowed rate']
-    #calculates negative points for cards        
+    #calculates negative points for cards
     score+=-1.5*data['blue']-0.75*data['goals allowed']
     if data['red']==1 or data['yellow']==2:
-         score+=-10
+        score+=-10
     else:
-         score+=-3*data['yellow']-5*data['red']
+        score+=-3*data['yellow']-5*data['red']
     if score<0:
         score=0
-    return(score)
+    return score
 
 def create_summary(directory,group_cols):
     #print('dir- ',directory)
@@ -768,7 +770,7 @@ def create_summary(directory,group_cols):
     #print(matchlist)
     #basically so the totals doesn't keep getting added each time
     df_match=pd.DataFrame()
-    if 'Totals.xlsx' in matchlist: 
+    if 'Totals.xlsx' in matchlist:
         matchlist.remove('Totals.xlsx')
     for match in matchlist:
         #append all the data from each match to a dataframe
@@ -796,26 +798,26 @@ def create_summary(directory,group_cols):
         df_summary=df_all.groupby(group_cols).sum()
     #print(df_summary)
 
-    #print('summary created')    
+    #print('summary created')
     df_avg=df_all.groupby(group_cols).mean()
     #df_summary.to_excel(directory+'Totals.xlsx',index=True)
-    with pd.ExcelWriter(directory+'Totals.xlsx') as writer:  
+    with pd.ExcelWriter(directory+'Totals.xlsx') as writer:
         df_summary.to_excel(writer, sheet_name='Totals',index=True)
         df_avg.to_excel    (writer, sheet_name='Averages',index=True)
 
-    
-    
+
+
 def save():
     user=os.getlogin()
     #adds the data to the dataframe and resets variables
     #add try statement to save
     cb_gamespeed['state']='normal'
     tot_pitchtime=pitchtime.get()*gamespeed.get()
-    
+
     initial_data={'Name':selected_player.get(),'Team':selected_team.get(),
                   'Position':selected_pos.get(),'Score':0,'Effectiveness':0,
                   'Pitch Time':tot_pitchtime,'Offence':state['offence'],'Defence':state['defence']}
-    
+
     try:
         #creates the data for offencive scoring rate and defencive scoring rate
         initial_data['Offences scored rate']=(chaser_data['shot goal']+chaser_data['drive goal']
@@ -825,9 +827,9 @@ def save():
         initial_data['Offences scored rate']=0
     try:
         initial_data['Defence score allowed rate']=(goals_allowed.get())/initial_data['Defence']
-    except:   
+    except:
         initial_data['Defence score allowed rate']=0
-        
+
     #calculates percentages for relevant actions
     if selected_pos.get()=='Keeper/Chaser' or selected_pos.get()=='Chaser':
         if chaser_data['drive attempt']>0:
@@ -840,7 +842,7 @@ def save():
             chaser_data['long pass percent']=round((chaser_data['long pass complete']/chaser_data['long pass'])*100,2)
         if chaser_data['targeted']>0:
             chaser_data['catch percent']=round((chaser_data['catch-']/chaser_data['targeted'])*100,2)
-        
+
         #combines the 3 dictionaries into one large dictionary
         data={**initial_data,**chaser_data,**cards}
     elif selected_pos.get()=='Beater':
@@ -852,15 +854,15 @@ def save():
             data['bubble percent']=round(((data['bubble duration']*gamespeed.get())/(snitch_time.get()*gamespeed.get()))*100,2)
             if data['bubble percent']>100:
                 data['bubble percent']=100
-        #we dont need these now so delete them        
+        #we dont need these now so delete them
         del data['control time']
         del data['bubble duration']
-        
+
     elif selected_pos.get()=='Seeker':
         seeker_data['time attacking']=seeker_data['time attacking']*gamespeed.get()
         seeker_data['time defending']=seeker_data['time defending']*gamespeed.get()
         data={**initial_data,**seeker_data,**cards}
-        
+
     data['goals allowed']=goals_allowed.get()
     data['Score']=round(score(data,selected_pos.get()),2)
     data['Effectiveness']=round(data['Score']/data['Pitch Time'],3)
@@ -891,17 +893,17 @@ def save():
     else:
         team_against=teams[0]
     create_summary('./games/tournament/'+selected_tournament.get()+'/', ['Name','Team','Position'])
-   
+
     #save to player directory
     player_data={'Tournament':selected_tournament.get(),'Team against':team_against}
-    
+
     #combines all the stats into one dictionary
     player_data={**player_data,**data}
     team_data=player_data.copy()
     del player_data['Name'] #the file about the player doesn't need their name every time
     player_dir='./games/player/'
     if os.path.exists(player_dir)==False:
-          os.mkdir(player_dir)
+        os.mkdir(player_dir)
     if os.path.isfile(player_dir+selected_player.get()+'.xlsx')==True:
         #changes the dataframe into a list of dictionaries
         main_data=pd.read_excel(player_dir+selected_player.get()+'.xlsx').to_dict('records')
@@ -911,7 +913,7 @@ def save():
         main_data.append(player_data)
     match_df=pd.DataFrame(main_data)
     match_df.to_excel(player_dir+selected_player.get()+'.xlsx',index=False)
-      
+
     #save to team directory
     team_dir='./games/team/'+selected_team.get()+'/'
     #deletes unwanted columns
@@ -930,21 +932,21 @@ def save():
     else:
         main_data=[]
         main_data.append(team_data)
-    #save data to excel sheet    
+    #save data to excel sheet
     match_df=pd.DataFrame(main_data)
     match_df.to_excel(team_dir+selected_tournament.get()+'/'+game+'.xlsx',index=False)
     #create team summary for each tournament
     create_summary(team_dir+selected_tournament.get()+'/', ['Name','Position'])
-    
+
     #create totals sheets-per season
     tournament_list= [f.name for f in os.scandir('./games/tournament/') if f.is_dir()] #gets list of tournaments
     years=[item.split('-', 1)[1] for item in tournament_list] #gets the year of each tournament
     years=list(set(years)) #removes duplicate years
-    
+
     for season in years:
         #for each season get all of the totals from the tournaments in that year
         season_stats=pd.DataFrame()
-        for tournament in tournament_list: 
+        for tournament in tournament_list:
             #print('tournament- ',tournament)
             #print('filepath- ','./games/tournament/'+tournament+'/'+'Totals.xlsx')
             #print('tournament year-',tournament.split('-',1)[1])
@@ -962,9 +964,9 @@ def save():
         #print('season_stats-')
         #print(season_stats)
         #group whole season stats by player and position
-        try:   
+        try:
             season_avg=season_stats.groupby(['Name','Position']).mean()
-            
+
             try:
                 cols_agg={'Score':'sum','Effectiveness':'sum','Pitch Time':'sum','drive goal':'sum','drive attempt':'sum','completed drive percent':'mean',
           'shot percent':'mean','shot goal':'sum','shot target':'sum','shot miss':'sum',
@@ -985,7 +987,7 @@ def save():
         except Exception as exception:
             messagebox.showerror('Error Grouping Stats','There has been an error grouping the season statistics \n'+
                                  exception)
-        with pd.ExcelWriter('./games/season_results/'+season+'.xlsx') as writer:  
+        with pd.ExcelWriter('./games/season_results/'+season+'.xlsx') as writer:
             season_avg.to_excel  (writer, sheet_name='Totals',index=True)
             season_stats.to_excel(writer, sheet_name='Averages',index=True)
 
@@ -998,7 +1000,7 @@ def save():
     seeker_data.fromkeys(seeker_data,0)
     cards.fromkeys(cards,0)
     pitchtime.set(0)
-    
+
 def reset():
     #resets all values to 0
     pitch_time('stop')
@@ -1014,8 +1016,8 @@ def reset():
         child.configure(state='normal')
     btn_goal_allowed['state']='disabled'
 
-    
-    
+
+
 btn_save_results=tk.Button(root,text='Save player',width=30,command=save)
 btn_save_results.grid(row=11,column=0,columnspan=4,pady=(20,20))
 
@@ -1032,37 +1034,35 @@ def file_exists(path,file_name):
         while True:
             expand += 1
             new_file_name = file_name.split(".")[0] + str(expand) +'.'+file_name.split('.')[1]
-            if os.path.isfile(path+new_file_name):
-                continue
-            else:
+            if not os.path.isfile(path+new_file_name):
                 file_name = new_file_name
                 break
-    
-    return(file_name)
+
+    return file_name
 
 def window_add_match():
     #use this to increment the dataframe- df.loc[df.name.isin('playername'), 'value to increment'] += 1
-    ##############################################################################   
-    #creates the add match window                                                
+    ##############################################################################
+    #creates the add match window
     wd_add_match=tk.Toplevel() #add this to only open with command
     wd_add_match.title('Add New Match')
     wd_add_match.geometry('630x530')               #sets default window size
     wd_add_match.iconbitmap('hoops_icon.ico')      #sets the window icon
     lbl_error=tk.Label(wd_add_match,text=' ')
 
-    def add_match():  
+    def add_match():
         # a lazy error label
         #if the entry boxes are filled in
-        if (not ent_tournament.get()=='' and not ent_team1.get()=='' 
-            and not ent_team2.get()=='' and not lstbx_team1.size()==0 
+        if (not ent_tournament.get()=='' and not ent_team1.get()==''
+            and not ent_team2.get()=='' and not lstbx_team1.size()==0
             and not lstbx_team2.size()==0 and not len(ent_year.get())==0
             and not '-' in ent_year.get()):
-            #create dataframe 
+            #create dataframe
             df_match=pd.DataFrame(columns=['Name','Team'])
-        
+
             #when add match button is pressed creates a dataframe of all players in that match and their team
             df_match.style.set_table_attributes("style='display:inline'").set_caption(ent_tournament.get())
-            
+
             for n in range(lstbx_team1.size()): #iterates across all items in the listbox
                 item=lstbx_team1.get(n) #gets currently selected item
                 #print('team 1')
@@ -1070,7 +1070,7 @@ def window_add_match():
                 #adds player to the dataframe
                 df_match=df_match.append({'Name':(item),
                                           'Team':ent_team1.get()},ignore_index=True)
-                
+
             for n in range(lstbx_team2.size()): #iterates across all items in the listbox
                 item=lstbx_team2.get(n)  #gets currently selected item
                 #print('team 2')
@@ -1079,12 +1079,12 @@ def window_add_match():
                 #adds player to the dataframe
                 df_match=df_match.append({'Name':item,
                                               'Team':ent_team2.get()},ignore_index=True)
-                                          
+
             tournament=ent_tournament.get().upper()+'-'+ent_year.get()
             #makes the folder for the tournament if it doesnt exist
             if os.path.exists('./games/game_def/'+tournament+'/')==False:
                 os.mkdir('./games/game_def/'+tournament+'/')
-            
+
             #creates the name of the match
             match_name=ent_team1.get()+'_vs_'+ent_team2.get()+'_.csv'
             #checks if the file already exists and if so adds a number to the end of the filename
@@ -1092,11 +1092,11 @@ def window_add_match():
                 file_check=messagebox.askyesno('Save File','File already exists \n would you like to overwrite?')
                 if file_check==0:
                     tournament=file_exists('./games/game_def/',ent_tournament.get()+'.csv')
-            
+
             #saves the file to the correct folder
-            df_match.to_csv('./games/game_def/'+tournament+'/'+match_name,index=False)        
-            
-            #deletes all data on the screen    
+            df_match.to_csv('./games/game_def/'+tournament+'/'+match_name,index=False)
+
+            #deletes all data on the screen
             lstbx_team1.delete(0,tk.END)
             lstbx_team2.delete(0,tk.END)
             ent_team1.delete(0,tk.END)
@@ -1115,7 +1115,7 @@ def window_add_match():
             #if fields not filled in show error message
             lbl_error.config(text='Error: A field is empty not saving match data',fg='red')
             lbl_error.grid(row=99,column=0,columnspan=3)
-            
+
             error_dict={'Team 1':lstbx_team1.size(),'Team 2':lstbx_team2.size(),
                         'Team 1 name':len(ent_team1.get()),'Team 2 name':len(ent_team2.get())
                         ,'Tournament name':len(ent_tournament.get()),'Season':len(ent_year.get())}
@@ -1125,40 +1125,40 @@ def window_add_match():
                     messagebox.showwarning('Add Match Error',error_message)
             if '-' in ent_year.get():
                 messagebox.showwarning('Add Match Error','The entry for season must not contain a - in it')
-    
+
     def add_player_t1():
         #when the add player button is pressed it adds the player to the list box
         #if entry box isnt filled in dont do anything
         if not ent_add_player_t1.get()=='':
             lstbx_team1.insert('end',(ent_add_player_t1.get()))
             ent_add_player_t1.delete(0,tk.END)
-            
-    
+
+
     def delete_t1():
         #deletes the selected item from the listbox
         lstbx_team1.delete(tk.ANCHOR) #tk.anchor is the current item selected
-        
-    #gets and places label and entry box for match name    
+
+    #gets and places label and entry box for match name
     lbl_tournament=tk.Label(wd_add_match,text='Tournament')
     ent_tournament=tk.Entry(wd_add_match,width=50)
     lbl_year      =tk.Label(wd_add_match,text='Season',width=6)
     ent_year      =tk.Entry(wd_add_match,width=6)
-    
+
     ent_tournament.grid(row=0,column=1,pady=(10,20))
     lbl_tournament.grid(row=0,column=0,pady=(10,20))
     lbl_year.grid(row=0,column=2,pady=(10,20))
     ent_year.grid(row=0,column=3,pady=(10,20))
 
     # creates displays the add players label
-    lbl_add_player=tk.Label(wd_add_match,text='Add players')    
-    lbl_add_player.grid(row=3,column=1)  
-    
+    lbl_add_player=tk.Label(wd_add_match,text='Add players')
+    lbl_add_player.grid(row=3,column=1)
+
     #adds team name entry and label
     lbl_team1=tk.Label(wd_add_match,text='Team 1: ')
     lbl_team1.grid(row=2,column=0)
     ent_team1=tk.Entry(wd_add_match,width=50)
     ent_team1.grid(row=2,column=1)
-    
+
     #adds the labels and buttons relating to add players
     lbl_add_player_t1=tk.Label(wd_add_match,text='Player name: ')
     ent_add_player_t1=tk.Entry(wd_add_match,width=50)
@@ -1170,7 +1170,7 @@ def window_add_match():
     #listbox stuff
     lbl_player_lst_box=tk.Label(wd_add_match,text='Player list' )
     lstbx_team1=tk.Listbox(wd_add_match,height=10,width=30)
-    scrl_t1=tk.Scrollbar(wd_add_match) #scrollbar 
+    scrl_t1=tk.Scrollbar(wd_add_match) #scrollbar
     lstbx_team1.configure(yscrollcommand=scrl_t1.set)
     scrl_t1.configure(command=lstbx_team1.yview)
     #places listbox stuff
@@ -1178,12 +1178,12 @@ def window_add_match():
     lbl_player_lst_box.grid(row=2,column=4)
     lstbx_team1.grid(row=3,column=3,rowspan=20,columnspan=3)
     scrl_t1.grid(row=3,column=6,sticky='ns',rowspan=21)
-    
+
     #adds delete button
     btn_del_t1 = tk.Button(wd_add_match, text="Remove Player", command=delete_t1)
     btn_del_t1.grid(row=24,column=4)
-    
-    
+
+
     ##################################################################################
     #For defining players in team 2
     def add_player_t2():
@@ -1194,26 +1194,26 @@ def window_add_match():
     def delete_t2():
         #deletes selected item from the listbox
         lstbx_team2.delete(tk.ANCHOR)
-        
-    #for definining the team name and placing it in the window   
+
+    #for definining the team name and placing it in the window
     lbl_team2=tk.Label(wd_add_match,text='Team 2: ')
     ent_team2=tk.Entry(wd_add_match,width=50)
     #places team 2 info
     lbl_team2.grid(row=25,column=0)
     ent_team2.grid(row=25,column=1)
-    
-    lbl_add_players2=tk.Label(wd_add_match,text='Add players')   
-    lbl_add_players2.grid(row=26,column=1)  
-     
+
+    lbl_add_players2=tk.Label(wd_add_match,text='Add players')
+    lbl_add_players2.grid(row=26,column=1)
+
     lbl_add_player_t2=tk.Label(wd_add_match,text='Player name: ')
     ent_add_player_t2=tk.Entry(wd_add_match,width=50)
     btn_add_playert2=tk.Button(wd_add_match,command=add_player_t2,text='Add player')
-    
+
     #places add player entry stuff
     lbl_add_player_t2.grid(row=27,column=0)
     ent_add_player_t2.grid(row=27,column=1)
     btn_add_playert2.grid(row=28,column=1)
-    
+
     #creates list box for players in team 2
     lbl_player_lst_boxt2=tk.Label(wd_add_match,text='%s Player list' %ent_team1.get())
     lstbx_team2=tk.Listbox(wd_add_match,height=10,width=30)
@@ -1223,20 +1223,19 @@ def window_add_match():
     lbl_player_lst_boxt2.grid(row=25,column=4)
     lstbx_team2.grid(row=26,column=3,rowspan=20,columnspan=3)
     scrl_t2.grid(row=26,column=6,sticky='ns',rowspan=21)
-    
+
     #add the remove player button
     btn_del_t2 = tk.Button(wd_add_match, text="Remove Player", command=delete_t2)
     btn_del_t2.grid(row=47,column=4)
-    
-    
+
+
     lbl_error=tk.Label(wd_add_match,text='  ',fg='red')
     lbl_error.grid(row=99,column=0,columnspan=3)
-    
+
     #add the add match button at the bottom of the window
     btn_add_match=tk.Button(wd_add_match,text='add new match',command=add_match,width=20,height=1)
     btn_add_match.grid(row=100,column=1)
 
-            
 def import_match():
     #function to add a match and sync its contents with the rest of the data
     #gets the location of the file
@@ -1292,22 +1291,22 @@ def import_match():
                 player.append(data_list)
                 df2=pd.DataFrame(player)
             else:
-               df2=pd.DataFrame([data_list])
+                df2=pd.DataFrame([data_list])
             del df2['Name']
             #print('player saved')
             df2.to_excel('./games/player/'+data_list['Name']+'.xlsx',index=False)
             
-            
+
             if data_list['Team']==teams[0]:
                 team1_players.append(data_list)
             elif data_list['Team']==teams[1]:
                 team2_players.append(data_list)
                 
-        df_team=[]        
+        df_team=[]
         df_team.append(pd.DataFrame(team1_players))
         df_team.append(pd.DataFrame(team2_players))
-       
-        for team in range(len(df_team)):
+
+        for team in enumerate(df_team):
             #print('team_row')
             #print(df_team[team].iloc[0]['Team'])
             try:
@@ -1340,7 +1339,7 @@ def import_match():
             create_summary(team_dir+tournament+'/', ['Name','Position'])
 
     
-        
+
         #adds to tournament folder
         tournament_dir='./games/tournament/'+tournament+'/'
         if os.path.exists(tournament_dir)==False:
@@ -1391,7 +1390,7 @@ def import_match():
             season_avg.to_excel  (writer, sheet_name='Totals',index=True)
             season_stats.to_excel(writer, sheet_name='Averages',index=True)
         
-    
+
     ## Try to remove tree; if failed show an error using try...except on screen
     try:
         shutil.rmtree(tournament_loc)
@@ -1414,4 +1413,3 @@ main_menu.add_cascade(label='Help',menu=help_menu)
 help_menu.add_command(label='View Instructions',command=view_instructions)
 help_menu.add_command(label='Report Bug')
 root.mainloop() 
-
